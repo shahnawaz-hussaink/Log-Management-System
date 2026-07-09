@@ -1,0 +1,14 @@
+<div class="container" style="max-width: 400px; margin-top: 5rem;">
+  <div class="card" style="padding: 3rem 2rem;">
+    <h2 style="text-align: center; margin-bottom: 0.5rem;">Sign In</h2>
+    <p style="text-align: center; margin-bottom: 2rem;">Continue to OfficeFlow</p>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input type="email" class="form-control" [(ngModel)]="email" placeholder="e.g. alice@office.com">
+    </div>
+    <div *ngIf="error" style="color: var(--danger-color); margin-bottom: 1rem; font-size: 0.9rem; padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
+      {{ error }}
+    </div>
+    <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" (click)="login()">Sign In</button>
+  </div>
+</div>

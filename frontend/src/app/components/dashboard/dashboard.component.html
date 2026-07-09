@@ -1,0 +1,32 @@
+<div class="container mt-4">
+  <div class="flex justify-between items-center mb-4">
+    <h2>Dashboard</h2>
+    <button class="btn btn-primary" (click)="goToUpload()">Upload New Document</button>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom: 1.5rem; color: var(--text-secondary); font-size: 1rem;">My Documents</h3>
+    
+    <div *ngIf="documents.length === 0" style="text-align: center; padding: 3rem 0; color: var(--text-secondary);">
+      No documents found. Upload one to get started!
+    </div>
+
+    <div *ngFor="let doc of documents" style="padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; border-radius: 8px; cursor: pointer;" (click)="goToDetails(doc.ID)" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+      <div>
+        <div style="font-weight: 500; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-primary);">{{ doc.Filename }}</div>
+        <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; gap: 1rem;">
+          <span>Uploader: {{ doc.Uploader.Name }}</span>
+          <span>Current Owner: {{ doc.CurrentOwner.Name }}</span>
+          <span>Date: {{ doc.CreatedAt | date:'short' }}</span>
+        </div>
+      </div>
+      <div>
+        <span class="badge" [ngClass]="{
+          'badge-pending': doc.Status === 'Pending Approval' || doc.Status === 'Draft' || doc.Status === 'Sent Back',
+          'badge-approved': doc.Status === 'Approved',
+          'badge-rejected': doc.Status === 'Rejected'
+        }">{{ doc.Status }}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,89 @@
+<div class="container mt-4" *ngIf="document">
+  <button class="btn btn-secondary mb-4" (click)="router.navigate(['/dashboard'])">&larr; Back to Dashboard</button>
+  
+  <div class="flex gap-4" style="align-items: flex-start;">
+    <!-- Main Content: Document Metadata and Actions -->
+    <div style="flex: 2;">
+      <div class="card" style="margin-bottom: 2rem;">
+        <div class="flex justify-between items-center mb-4">
+          <h2>{{ document.Filename }}</h2>
+          <span class="badge" [ngClass]="{
+            'badge-pending': document.Status === 'Pending Approval' || document.Status === 'Draft' || document.Status === 'Sent Back',
+            'badge-approved': document.Status === 'Approved',
+            'badge-rejected': document.Status === 'Rejected'
+          }">{{ document.Status }}</span>
+        </div>
+        
+        <div class="flex gap-4 mb-4">
+          <p><strong>Uploader:</strong> {{ document.Uploader.Name }}</p>
+          <p><strong>Current Owner:</strong> {{ document.CurrentOwner.Name }}</p>
+        </div>
+
+        <button class="btn btn-secondary mb-4" (click)="download()">Download Document</button>
+
+        <!-- Actions panel if current user is owner -->
+        <div *ngIf="document.CurrentOwnerID === currentUser.ID && document.Status !== 'Approved' && document.Status !== 'Rejected'">
+          <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 2rem 0;">
+          <h3>Action Required</h3>
+          
+          <div class="form-group mt-4">
+            <label class="form-label">Remarks</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="actionRemarks" placeholder="Add your comments here..."></textarea>
+          </div>
+          
+          <div class="flex gap-4 mt-4">
+            <button class="btn btn-success" (click)="submitAction('Approved')">Approve</button>
+            <button class="btn btn-warning" style="background: var(--warning-color); color: white;" (click)="submitAction('Sent Back')">Send Back for Revision</button>
+            <button class="btn btn-danger" (click)="submitAction('Rejected')">Reject Final</button>
+          </div>
+        </div>
+
+        <!-- Replace File Panel if Sent Back -->
+        <div *ngIf="document.Status === 'Sent Back' && document.UploaderID === currentUser.ID">
+          <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 2rem 0;">
+          <h3>Replace File</h3>
+          <p class="mb-4">This document was sent back. You can upload a revised version.</p>
+
+          <div class="form-group">
+            <input type="file" class="form-control" (change)="onFileSelected($event)">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Select Next Approver</label>
+            <select class="form-control" [(ngModel)]="selectedUser">
+              <option *ngFor="let user of users" [value]="user.ID">{{ user.Name }}</option>
+            </select>
+          </div>
+
+          <div *ngIf="replaceError" style="color: var(--danger-color); margin-bottom: 1rem;">{{ replaceError }}</div>
+
+          <button class="btn btn-primary mt-4" (click)="replaceFile()">Upload Revised Document</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar: Workflow Timeline -->
+    <div style="flex: 1;">
+      <div class="card">
+        <h3>Workflow History</h3>
+        <div class="timeline">
+          <div class="timeline-item" *ngFor="let item of history">
+            <div class="timeline-dot" [ngStyle]="{'background': item.Action === 'Rejected' ? 'var(--danger-color)' : item.Action === 'Approved' ? 'var(--success-color)' : 'var(--accent-color)'}"></div>
+            <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+              <div style="font-weight: 500; margin-bottom: 0.25rem;">{{ item.Action }}</div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                By {{ item.Actor.Name }}<span *ngIf="item.Target"> &rarr; To {{ item.Target.Name }}</span>
+              </div>
+              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                {{ item.CreatedAt | date:'short' }}
+              </div>
+              <div *ngIf="item.Remarks" style="font-size: 0.9rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 0.5rem; font-style: italic;">
+                "{{ item.Remarks }}"
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+<nav style="padding: 1rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: var(--surface-color);">
+  <h2 style="margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+    <div style="width: 24px; height: 24px; background: var(--accent-color); border-radius: 6px;"></div>
+    OfficeFlow
+  </h2>
+  <div *ngIf="authService.currentUser$ | async as user" class="flex items-center gap-4">
+    <span style="color: var(--text-secondary);">Welcome, <strong>{{ user.Name }}</strong></span>
+    <button class="btn btn-secondary" (click)="logout()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Logout</button>
+  </div>
+</nav>
+<div style="padding: 2rem;">
+  <router-outlet></router-outlet>
+</div>
