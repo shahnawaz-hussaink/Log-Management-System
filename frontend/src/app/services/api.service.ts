@@ -13,8 +13,12 @@ export class ApiService {
     return this.http.get<any[]>(`${this.apiUrl}/users`);
   }
 
-  getDocuments(userId: string) {
-    return this.http.get<any[]>(`${this.apiUrl}/documents?user_id=${userId}`);
+  getDocuments(userId: string, search?: string) {
+    let url = `${this.apiUrl}/documents?user_id=${userId}`;
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+    return this.http.get<any[]>(url);
   }
 
   getDocumentDetails(id: string) {
@@ -33,7 +37,7 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/documents/${id}/action`, actionData);
   }
 
-  login(email: string) {
-    return this.http.post<any>(`${this.apiUrl}/auth/login`, { email });
+  login(email: string, password?: string) {
+    return this.http.post<any>(`${this.apiUrl}/auth/login`, { email, password });
   }
 }

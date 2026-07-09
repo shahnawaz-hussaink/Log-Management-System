@@ -6,13 +6,16 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"office-file-sharing/backend/internal/db"
 	"office-file-sharing/backend/internal/models"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // In a real app we'd hash passwords and use JWT. Keeping it simple here or mocking.
@@ -71,13 +74,34 @@ func UploadDocument(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to save file content"})
 	}
 
+	title := c.FormValue("title")
+	if title == "" {
+		title = file.Filename
+	}
+	description := c.FormValue("description")
+	category := c.FormValue("category")
+	if category == "" {
+		category = "Document"
+	}
+	tags := c.FormValue("tags")
+
+	// Generate a unique number following the convention: DOC-YYYYMMDD-XXXXXX (last 6 chars of a new UUID)
+	now := time.Now()
+	uniqueNumber := fmt.Sprintf("DOC-%s-%s", now.Format("20060102"), strings.ToUpper(uuid.New().String()[:6]))
+
 	// Create DB Record
 	doc := models.Document{
+		ID:             uuid.New(),
 		Filename:       file.Filename,
 		FilePath:       filePath,
 		UploaderID:     uploaderID,
 		CurrentOwnerID: targetOwnerID,
 		Status:         models.StatusPendingApproval,
+		Title:          title,
+		Description:    description,
+		UniqueNumber:   uniqueNumber,
+		Tags:           tags,
+		Category:       category,
 	}
 
 	if err := db.DB.Create(&doc).Error; err != nil {
@@ -105,9 +129,20 @@ func GetDocuments(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid user ID"})
 	}
 
+	search := c.QueryParam("search")
+
 	var documents []models.Document
-	// Documents where user is uploader or current owner
-	if err := db.DB.Preload("Uploader").Preload("CurrentOwner").Where("uploader_id = ? OR current_owner_id = ?", userID, userID).Find(&documents).Error; err != nil {
+	query := db.DB.Preload("Uploader").Preload("CurrentOwner").Where("uploader_id = ? OR current_owner_id = ?", userID, userID)
+
+	if search != "" {
+		searchLike := "%" + strings.ToLower(search) + "%"
+		query = query.Where(
+			"LOWER(title) LIKE ? OR LOWER(description) LIKE ? OR LOWER(unique_number) LIKE ? OR LOWER(tags) LIKE ? OR LOWER(category) LIKE ?",
+			searchLike, searchLike, searchLike, searchLike, searchLike,
+		)
+	}
+
+	if err := query.Find(&documents).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to fetch documents"})
 	}
 
@@ -192,6 +227,13 @@ func DocumentAction(c echo.Context) error {
 	case models.ActionSentBack:
 		newStatus = models.StatusSentBack
 		nextOwnerID = doc.UploaderID // Returns to uploader
+	case models.ActionForwarded, "Forward":
+		newStatus = models.StatusPendingApproval
+		if req.TargetID == nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Target ID is required to forward document"})
+		}
+		nextOwnerID = *req.TargetID
+		wfAction = models.ActionForwarded
 	default:
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid action"})
 	}
@@ -319,9 +361,10 @@ func ReplaceDocument(c echo.Context) error {
 	return c.JSON(http.StatusOK, doc)
 }
 
-// Simple Login - Just finds the user by email
+// LoginRequest with email and password
 type LoginRequest struct {
-	Email string `json:"email"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func Login(c echo.Context) error {
@@ -332,9 +375,35 @@ func Login(c echo.Context) error {
 
 	var user models.User
 	if err := db.DB.First(&user, "email = ?", req.Email).Error; err != nil {
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid email"})
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid email or password"})
 	}
 
-	// In a real app, verify password and issue JWT here. For simplicity, returning user object.
-	return c.JSON(http.StatusOK, user)
+	// Verify password hash
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid email or password"})
+	}
+
+	// Generate JWT token
+	claims := &JWTCustomClaims{
+		UserID: user.ID.String(),
+		Email:  user.Email,
+		Name:   user.Name,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(JWTSecretKey)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to generate authentication token"})
+	}
+
+	// Remove password hash from response
+	user.PasswordHash = ""
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"token": tokenString,
+		"user":  user,
+	})
 }

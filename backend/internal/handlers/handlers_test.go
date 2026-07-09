@@ -34,6 +34,11 @@ func TestReplaceDocument_OptionalFile(t *testing.T) {
 		UploaderID:     alice.ID,
 		CurrentOwnerID: alice.ID,
 		Status:         models.StatusSentBack,
+		Title:          "Test Document",
+		UniqueNumber:   "DOC-TEST-12345",
+		Category:       "Document",
+		Description:    "Test description",
+		Tags:           "test, mock",
 	}
 	if err := db.DB.Create(&doc).Error; err != nil {
 		t.Fatalf("Failed to create test document: %v", err)

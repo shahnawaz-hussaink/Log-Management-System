@@ -1,14 +1,25 @@
-<div class="container" style="max-width: 400px; margin-top: 5rem;">
-  <div class="card" style="padding: 3rem 2rem;">
-    <h2 style="text-align: center; margin-bottom: 0.5rem;">Sign In</h2>
-    <p style="text-align: center; margin-bottom: 2rem;">Continue to OfficeFlow</p>
-    <div class="form-group">
-      <label class="form-label">Email Address</label>
-      <input type="email" class="form-control" [(ngModel)]="email" placeholder="e.g. alice@office.com">
+<div class="max-w-[400px] mx-auto mt-20 px-4">
+  <div class="bg-white border border-slate-200 rounded-2xl p-8 shadow-xl relative overflow-hidden">
+    <!-- Top accent light -->
+    <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+    
+    <h2 class="text-center text-2xl font-bold text-slate-800 mb-2">Sign In</h2>
+    <p class="text-center text-slate-500 text-sm mb-6">Continue to OfficeFlow</p>
+    
+    <div class="mb-4">
+      <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
+      <input type="email" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-300" [(ngModel)]="email" placeholder="e.g. alice@office.com">
     </div>
-    <div *ngIf="error" style="color: var(--danger-color); margin-bottom: 1rem; font-size: 0.9rem; padding: 0.75rem; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
+
+    <div class="mb-5">
+      <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Password</label>
+      <input type="password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-300" [(ngModel)]="password" placeholder="••••••••">
+    </div>
+    
+    <div *ngIf="error" class="text-rose-600 mb-4 text-sm p-3 bg-rose-50 border border-rose-100 rounded-xl">
       {{ error }}
     </div>
-    <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" (click)="login()">Sign In</button>
+    
+    <button class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 cursor-pointer font-semibold" (click)="login()">Sign In</button>
   </div>
 </div>

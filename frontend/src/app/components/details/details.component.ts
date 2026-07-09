@@ -64,7 +64,8 @@ export class DetailsComponent implements OnInit {
   }
 
   download() {
-    window.open(`http://localhost:8080/api/documents/${this.document.ID}/download`, '_blank');
+    const token = this.auth.getToken();
+    window.open(`http://localhost:8080/api/documents/${this.document.ID}/download?token=${token}`, '_blank');
   }
 
   submitAction(action: string) {
@@ -73,6 +74,8 @@ export class DetailsComponent implements OnInit {
       target = this.document.UploaderID;
     } else if (action === 'Approved') {
       target = this.currentUser.ID; // or specific user
+    } else if (action === 'Forwarded') {
+      target = this.selectedUser;
     }
 
     this.api.submitAction(this.document.ID, {
@@ -96,7 +99,8 @@ export class DetailsComponent implements OnInit {
 
   getPdfUrl(): SafeResourceUrl {
     if (!this.document) return '';
-    const url = `http://localhost:8080/api/documents/${this.document.ID}/download`;
+    const token = this.auth.getToken();
+    const url = `http://localhost:8080/api/documents/${this.document.ID}/download?token=${token}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 

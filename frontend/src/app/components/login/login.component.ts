@@ -14,18 +14,19 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent {
   email: string = 'alice@office.com';
+  password: string = 'password';
   error: string = '';
 
   constructor(private api: ApiService, private auth: AuthService, private router: Router) {}
 
   login() {
-    this.api.login(this.email).subscribe({
-      next: (user) => {
-        this.auth.setCurrentUser(user);
+    this.api.login(this.email, this.password).subscribe({
+      next: (res) => {
+        this.auth.setCurrentUser(res.user, res.token);
         this.router.navigate(['/dashboard']);
       },
       error: () => {
-        this.error = 'Invalid email or user not found. (Hint: try alice@office.com, bob@office.com, or charlie@office.com)';
+        this.error = 'Invalid email/password or user not found. (Hint: default password is "password")';
       }
     });
   }

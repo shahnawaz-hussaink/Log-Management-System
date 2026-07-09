@@ -16,6 +16,10 @@ export class UploadComponent implements OnInit {
   users: any[] = [];
   selectedFile: File | null = null;
   targetOwnerId: string = '';
+  title: string = '';
+  description: string = '';
+  category: string = 'Document';
+  tags: string = '';
   error: string = '';
 
   constructor(private api: ApiService, private auth: AuthService, private router: Router) {}
@@ -34,6 +38,12 @@ export class UploadComponent implements OnInit {
 
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
+    if (this.selectedFile && !this.title) {
+      // Auto-populate title with filename minus extension
+      const name = this.selectedFile.name;
+      const idx = name.lastIndexOf('.');
+      this.title = idx > 0 ? name.substring(0, idx) : name;
+    }
   }
 
   upload() {
@@ -50,6 +60,10 @@ export class UploadComponent implements OnInit {
     formData.append('file', this.selectedFile);
     formData.append('uploader_id', this.auth.getCurrentUser().ID);
     formData.append('target_owner_id', this.targetOwnerId);
+    formData.append('title', this.title);
+    formData.append('description', this.description);
+    formData.append('category', this.category);
+    formData.append('tags', this.tags);
 
     this.api.uploadDocument(formData).subscribe({
       next: () => {

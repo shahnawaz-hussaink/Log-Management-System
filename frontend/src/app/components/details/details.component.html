@@ -1,97 +1,130 @@
-<div class="container mt-4" *ngIf="document">
-  <button class="btn btn-secondary mb-4" (click)="router.navigate(['/dashboard'])">&larr; Back to Dashboard</button>
+<div class="mt-4 max-w-7xl mx-auto px-4" *ngIf="document">
+  <button class="text-slate-600 hover:text-slate-900 border border-slate-300 hover:bg-slate-50 font-medium rounded-xl text-sm px-5 py-2.5 transition-all duration-300 mb-6 cursor-pointer" (click)="router.navigate(['/dashboard'])">&larr; Back to Dashboard</button>
   
-  <div class="flex gap-4" style="align-items: flex-start;">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
     <!-- Main Content: Document Metadata and Actions -->
-    <div style="flex: 2;">
-      <div class="card" style="margin-bottom: 2rem;">
-        <div class="flex justify-between items-center mb-4">
-          <h2>{{ document.Filename }}</h2>
-          <span class="badge" [ngClass]="{
-            'badge-pending': document.Status === 'Pending Approval' || document.Status === 'Draft' || document.Status === 'Sent Back',
-            'badge-approved': document.Status === 'Approved',
-            'badge-rejected': document.Status === 'Rejected'
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
+        <div class="flex justify-between items-start mb-6 gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-2 flex-wrap">
+              <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md">{{ document.UniqueNumber }}</span>
+              <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md uppercase">{{ document.Category }}</span>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800">{{ document.Title }}</h2>
+            <p class="text-xs text-slate-400 mt-1">File: {{ document.Filename }}</p>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider border flex-shrink-0" [ngClass]="{
+            'bg-amber-500/10 text-amber-600 border-amber-500/20': document.Status === 'Pending Approval' || document.Status === 'Draft' || document.Status === 'Sent Back',
+            'bg-emerald-500/10 text-emerald-600 border-emerald-500/20': document.Status === 'Approved',
+            'bg-rose-500/10 text-rose-600 border-rose-500/20': document.Status === 'Rejected'
           }">{{ document.Status }}</span>
         </div>
+
+        <div *ngIf="document.Description" class="mb-6 p-4 bg-slate-50 border border-slate-200/65 rounded-xl">
+          <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Description</h4>
+          <p class="text-sm text-slate-700 leading-relaxed">{{ document.Description }}</p>
+        </div>
         
-        <div class="flex gap-4 mb-4">
-          <p><strong>Uploader:</strong> {{ document.Uploader.Name }}</p>
-          <p><strong>Current Owner:</strong> {{ document.CurrentOwner.Name }}</p>
+        <div class="flex flex-wrap gap-x-8 gap-y-2 mb-6 text-sm text-slate-500">
+          <p>Uploader: <strong class="text-slate-800 font-semibold">{{ document.Uploader.Name }}</strong></p>
+          <p>Current Owner: <strong class="text-slate-800 font-semibold">{{ document.CurrentOwner.Name }}</strong></p>
+          <p *ngIf="document.Tags" class="flex gap-1 items-center">
+            Tags: 
+            <span *ngFor="let tag of document.Tags.split(',')" class="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded border border-slate-200">#{{ tag.trim() }}</span>
+          </p>
         </div>
 
-        <button class="btn btn-secondary mb-4" (click)="download()">Download Document</button>
+        <button class="text-slate-600 hover:text-slate-900 border border-slate-300 hover:bg-slate-50 font-semibold rounded-xl text-sm px-5 py-2.5 transition-all duration-300 cursor-pointer w-full sm:w-auto" (click)="download()">Download Document</button>
 
         <!-- Actions panel if current user is owner -->
         <div *ngIf="document.CurrentOwnerID === currentUser.ID && document.Status !== 'Approved' && document.Status !== 'Rejected'">
-          <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 2rem 0;">
-          <h3>Action Required</h3>
+          <hr class="border-slate-200 my-6">
+          <h3 class="text-lg font-bold text-slate-800">Action Required</h3>
           
-          <div class="form-group mt-4">
-            <label class="form-label">Remarks</label>
-            <textarea class="form-control" rows="3" [(ngModel)]="actionRemarks" placeholder="Add your comments here..."></textarea>
+          <div class="mt-4 mb-5">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Remarks</label>
+            <textarea class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-300" rows="3" [(ngModel)]="actionRemarks" placeholder="Add your comments here..."></textarea>
+          </div>
+
+          <div class="mb-5">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Forward to (Select Next Approver)</label>
+            <select class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-300 cursor-pointer" [(ngModel)]="selectedUser">
+              <option *ngFor="let user of users" [value]="user.ID" class="bg-white text-slate-800">{{ user.Name }}</option>
+            </select>
           </div>
           
-          <div class="flex gap-4 mt-4">
-            <button class="btn btn-success" (click)="submitAction('Approved')">Approve</button>
-            <button class="btn btn-warning" style="background: var(--warning-color); color: white;" (click)="submitAction('Sent Back')">Send Back for Revision</button>
-            <button class="btn btn-danger" (click)="submitAction('Rejected')">Reject Final</button>
+          <div class="flex flex-wrap gap-4">
+            <button class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 shadow-sm cursor-pointer flex-1 sm:flex-initial" (click)="submitAction('Approved')">Approve</button>
+            <button class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 cursor-pointer flex-1 sm:flex-initial" (click)="submitAction('Forwarded')">Forward</button>
+            <button class="bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 shadow-sm cursor-pointer flex-1 sm:flex-initial" (click)="submitAction('Sent Back')">Send Back for Revision</button>
+            <button class="bg-rose-600 hover:bg-rose-500 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 shadow-sm cursor-pointer flex-1 sm:flex-initial" (click)="submitAction('Rejected')">Reject Final</button>
           </div>
         </div>
 
         <!-- Replace / Resubmit File Panel if Sent Back -->
         <div *ngIf="document.Status === 'Sent Back' && document.UploaderID === currentUser.ID">
-          <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 2rem 0;">
-          <h3>Resubmit or Replace File</h3>
-          <p class="mb-4">This document was sent back. You can upload a revised version (optional) and resubmit it with remarks.</p>
+          <hr class="border-slate-200 my-6">
+          <h3 class="text-lg font-bold text-slate-800">Resubmit or Replace File</h3>
+          <p class="text-slate-500 text-sm mb-5">This document was sent back. You can upload a revised version (optional) and resubmit it with remarks.</p>
 
-          <div class="form-group">
-            <label class="form-label">Upload Revised Document (Optional)</label>
-            <input type="file" class="form-control" (change)="onFileSelected($event)">
+          <div class="mb-5">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Upload Revised Document (Optional)</label>
+            <input type="file" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600/10 file:text-blue-600 hover:file:bg-blue-600/20 file:cursor-pointer" (change)="onFileSelected($event)">
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Remarks / Comments</label>
-            <textarea class="form-control" rows="2" [(ngModel)]="replaceRemarks" placeholder="Add comments explaining changes or addressing feedback..."></textarea>
+          <div class="mb-5">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Remarks / Comments</label>
+            <textarea class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-300" rows="2" [(ngModel)]="replaceRemarks" placeholder="Add comments explaining changes or addressing feedback..."></textarea>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Select Next Approver</label>
-            <select class="form-control" [(ngModel)]="selectedUser">
-              <option *ngFor="let user of users" [value]="user.ID">{{ user.Name }}</option>
+          <div class="mb-6">
+            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Select Next Approver</label>
+            <select class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all duration-300 cursor-pointer" [(ngModel)]="selectedUser">
+              <option *ngFor="let user of users" [value]="user.ID" class="bg-white text-slate-800">{{ user.Name }}</option>
             </select>
           </div>
 
-          <div *ngIf="replaceError" style="color: var(--danger-color); margin-bottom: 1rem;">{{ replaceError }}</div>
+          <div *ngIf="replaceError" class="text-rose-600 mb-5 text-sm p-3 bg-rose border border-rose-100 rounded-xl">{{ replaceError }}</div>
 
-          <button class="btn btn-primary mt-4" (click)="replaceFile()">Resubmit Document</button>
+          <button class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 cursor-pointer w-full sm:w-auto" (click)="replaceFile()">Resubmit Document</button>
         </div>
       </div>
 
       <!-- PDF Preview Card -->
-      <div class="card" *ngIf="isPdf(document.Filename)" style="margin-top: 2rem; padding: 1.5rem;">
-        <h3 style="margin-bottom: 1rem;">Document Preview</h3>
-        <div style="width: 100%; height: 600px; border-radius: 8px; overflow: hidden; background: #0f172a; border: 1px solid rgba(255,255,255,0.05);">
-          <iframe [src]="getPdfUrl()" width="100%" height="100%" style="border: none;"></iframe>
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm" *ngIf="isPdf(document.Filename)">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Document Preview</h3>
+        <div class="w-full h-[600px] rounded-xl overflow-hidden bg-slate-50 border border-slate-200">
+          <iframe [src]="getPdfUrl()" width="100%" height="100%" class="border-0"></iframe>
         </div>
       </div>
     </div>
 
-    <!-- Sidebar: Workflow Timeline -->
-    <div style="flex: 1;">
-      <div class="card">
-        <h3>Workflow History</h3>
-        <div class="timeline">
-          <div class="timeline-item" *ngFor="let item of history">
-            <div class="timeline-dot" [ngStyle]="{'background': item.Action === 'Rejected' ? 'var(--danger-color)' : item.Action === 'Approved' ? 'var(--success-color)' : 'var(--accent-color)'}"></div>
-            <div style="background: rgba(15, 23, 42, 0.5); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-              <div style="font-weight: 500; margin-bottom: 0.25rem;">{{ item.Action }}</div>
-              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                By {{ item.Actor.Name }}<span *ngIf="item.Target"> &rarr; To {{ item.Target.Name }}</span>
+    <!-- Sidebar: Workflow History -->
+    <div class="lg:col-span-1">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h3 class="text-lg font-bold text-slate-800 mb-6">Workflow History</h3>
+        
+        <div class="relative pl-6 border-l border-slate-200 space-y-6">
+          <div class="relative" *ngFor="let item of history">
+            <!-- Timeline indicator dot -->
+            <div class="absolute -left-[31px] top-1.5 w-3.5 h-3.5 rounded-full border-[3px] border-white shadow-sm" [ngClass]="{
+              'bg-rose-500': item.Action === 'Rejected',
+              'bg-emerald-500': item.Action === 'Approved',
+              'bg-amber-500': item.Action === 'Sent Back',
+              'bg-blue-500': item.Action !== 'Rejected' && item.Action !== 'Approved' && item.Action !== 'Sent Back'
+            }"></div>
+            
+            <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl shadow-xs">
+              <div class="font-bold text-slate-800 text-sm mb-1">{{ item.Action }}</div>
+              <div class="text-xs text-slate-500 mb-2">
+                By <strong class="text-slate-700 font-medium">{{ item.Actor.Name }}</strong>
+                <span *ngIf="item.Target"> &rarr; To <strong class="text-slate-700 font-medium">{{ item.Target.Name }}</strong></span>
               </div>
-              <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              <div class="text-[10px] text-slate-400 mb-2">
                 {{ item.CreatedAt | date:'short' }}
               </div>
-              <div *ngIf="item.Remarks" style="font-size: 0.9rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 0.5rem; font-style: italic;">
+              <div *ngIf="item.Remarks" class="text-xs text-slate-600 italic border-t border-slate-200 pt-2 mt-2 leading-relaxed">
                 "{{ item.Remarks }}"
               </div>
             </div>

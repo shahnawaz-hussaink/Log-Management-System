@@ -33,6 +33,11 @@ type Document struct {
 	UploaderID     uuid.UUID `gorm:"type:uuid;not null"`
 	CurrentOwnerID uuid.UUID `gorm:"type:uuid;not null"`
 	Status         DocumentStatus `gorm:"size:50;not null"`
+	Title          string         `gorm:"size:255"`
+	Description    string         `gorm:"type:text"`
+	UniqueNumber   string         `gorm:"size:100;uniqueIndex"`
+	Tags           string         `gorm:"size:255"`
+	Category       string         `gorm:"size:100"`
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 
@@ -50,6 +55,7 @@ const (
 	ActionSentBack     WorkflowAction = "Sent Back"
 	ActionFileReplaced WorkflowAction = "File Replaced"
 	ActionResubmitted  WorkflowAction = "Resubmitted"
+	ActionForwarded    WorkflowAction = "Forwarded"
 )
 
 type WorkflowHistory struct {

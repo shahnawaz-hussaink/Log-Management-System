@@ -1,31 +1,57 @@
-<div class="container mt-4">
-  <div class="flex justify-between items-center mb-4">
-    <h2>Dashboard</h2>
-    <button class="btn btn-primary" (click)="goToUpload()">Upload New Document</button>
+<div class="mt-4 max-w-5xl mx-auto">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-slate-800">Dashboard</h2>
+    <button class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 px-5 rounded-xl transition-all duration-300 shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 flex items-center gap-2 cursor-pointer" (click)="goToUpload()">
+      <span class="text-lg leading-none font-bold">+</span> Upload New Document
+    </button>
   </div>
 
-  <div class="card">
-    <h3 style="margin-bottom: 1.5rem; color: var(--text-secondary); font-size: 1rem;">My Documents</h3>
+  <!-- Search input bar -->
+  <div class="mb-6">
+    <div class="relative">
+      <input type="text" class="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 shadow-xs" [(ngModel)]="searchText" (ngModelChange)="onSearchChange()" placeholder="Search documents by title, description, category, unique number, or tags...">
+      <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.602 10.602Z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+    <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-6">My Documents</h3>
     
-    <div *ngIf="documents.length === 0" style="text-align: center; padding: 3rem 0; color: var(--text-secondary);">
-      No documents found. Upload one to get started!
+    <div *ngIf="documents.length === 0" class="text-center py-12 text-slate-400">
+      No documents found. Try adjusting your search query!
     </div>
 
-    <div *ngFor="let doc of documents" style="padding: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; border-radius: 8px; cursor: pointer;" (click)="goToDetails(doc.ID)" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
-      <div>
-        <div style="font-weight: 500; font-size: 1.1rem; margin-bottom: 0.5rem; color: var(--text-primary);">{{ doc.Filename }}</div>
-        <div style="font-size: 0.85rem; color: var(--text-secondary); display: flex; gap: 1rem;">
-          <span>Uploader: {{ doc.Uploader.Name }}</span>
-          <span>Current Owner: {{ doc.CurrentOwner.Name }}</span>
-          <span>Date: {{ doc.CreatedAt | date:'short' }}</span>
+    <div class="space-y-3">
+      <div *ngFor="let doc of documents" class="p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl flex justify-between items-center transition-all duration-300 cursor-pointer shadow-xs hover:shadow-sm" (click)="goToDetails(doc.ID)">
+        <div class="flex-1 min-w-0 pr-4">
+          <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">{{ doc.UniqueNumber }}</span>
+            <span class="text-[10px] font-bold text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded-md uppercase">{{ doc.Category }}</span>
+            <div class="font-bold text-slate-800 text-base truncate">{{ doc.Title }}</div>
+          </div>
+          <div class="text-sm text-slate-650 mb-2 truncate" *ngIf="doc.Description">
+            {{ doc.Description }}
+          </div>
+          <div class="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1 items-center">
+            <span>Uploader: <strong class="text-slate-600 font-medium">{{ doc.Uploader.Name }}</strong></span>
+            <span>Current Owner: <strong class="text-slate-600 font-medium">{{ doc.CurrentOwner.Name }}</strong></span>
+            <span>Date: {{ doc.CreatedAt | date:'short' }}</span>
+            <span *ngIf="doc.Tags" class="flex gap-1 items-center ml-2">
+              <span *ngFor="let tag of doc.Tags.split(',')" class="bg-slate-200/50 text-slate-600 text-[10px] px-1.5 py-0.5 rounded-sm border border-slate-350/10">#{{ tag.trim() }}</span>
+            </span>
+          </div>
         </div>
-      </div>
-      <div>
-        <span class="badge" [ngClass]="{
-          'badge-pending': doc.Status === 'Pending Approval' || doc.Status === 'Draft' || doc.Status === 'Sent Back',
-          'badge-approved': doc.Status === 'Approved',
-          'badge-rejected': doc.Status === 'Rejected'
-        }">{{ doc.Status }}</span>
+        <div class="flex-shrink-0">
+          <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border" [ngClass]="{
+            'bg-amber-500/10 text-amber-600 border-amber-500/20': doc.Status === 'Pending Approval' || doc.Status === 'Draft' || doc.Status === 'Sent Back',
+            'bg-emerald-500/10 text-emerald-600 border-emerald-500/20': doc.Status === 'Approved',
+            'bg-rose-500/10 text-rose-600 border-rose-500/20': doc.Status === 'Rejected'
+          }">{{ doc.Status }}</span>
+        </div>
       </div>
     </div>
   </div>
