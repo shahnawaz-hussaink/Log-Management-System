@@ -249,7 +249,10 @@ func DocumentAction(c echo.Context) error {
 	db.DB.Save(&doc)
 
 	if req.Signature != "" {
-		if err := stampSignatureOnPDF(doc.FilePath, req.Signature); err != nil {
+		var existingSigs int64
+		db.DB.Model(&models.WorkflowHistory{}).Where("document_id = ? AND signature IS NOT NULL AND signature != ''", doc.ID).Count(&existingSigs)
+
+		if err := stampSignatureOnPDF(doc.FilePath, req.Signature, int(existingSigs)); err != nil {
 			log.Printf("Error overlaying e-signature on PDF file: %v", err)
 		}
 	}
@@ -421,7 +424,7 @@ func Login(c echo.Context) error {
 	})
 }
 
-func stampSignatureOnPDF(pdfPath string, base64Signature string) error {
+func stampSignatureOnPDF(pdfPath string, base64Signature string, existingSigCount int) error {
 	if base64Signature == "" {
 		return nil
 	}
@@ -451,8 +454,10 @@ func stampSignatureOnPDF(pdfPath string, base64Signature string) error {
 	tempOutPDF := pdfPath + ".signed"
 
 	// 5. Create watermark config
-	// scale:0.25 (fits nicely), pos:br (bottom right), off:-20 20 (margins)
-	wm, err := pdfcpu.ParseImageWatermarkDetails(tempPNG, "scale:0.25, pos:br, off:-20 20", true, types.POINTS)
+	// Calculate dynamic offset so signatures line up side-by-side horizontally
+	offsetX := -20 - (existingSigCount * 110)
+	desc := fmt.Sprintf("scale:0.25, pos:br, off:%d 20", offsetX)
+	wm, err := pdfcpu.ParseImageWatermarkDetails(tempPNG, desc, true, types.POINTS)
 	if err != nil {
 		return err
 	}
