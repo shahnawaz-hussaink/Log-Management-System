@@ -251,14 +251,23 @@ export class DetailsComponent implements OnInit {
             docx.renderAsync(blob, container, undefined, {
               className: 'docx-rendered',
               inWrapper: true,
-              ignoreWidth: false,
-              breakPages: true
+              ignoreWidth: true,
+              ignoreHeight: true,
+              ignoreFonts: false,
+              breakPages: false,
+              debug: false,
+              trimXmlDeclaration: true
+            }).catch(err => {
+              console.error('Docx render error:', err);
+              container.innerHTML = `<div class="flex items-center justify-center h-full text-rose-500 font-semibold p-6 text-center border-2 border-dashed border-rose-200 rounded-xl bg-rose-50/50">
+                <p>Failed to render preview. The document might be too large or complex for the browser previewer. Please use the download button below to view it natively.</p>
+              </div>`;
             });
           });
         }
       })
       .catch(err => {
-        console.error('Error fetching/rendering docx:', err);
+        console.error('Error fetching docx:', err);
       });
   }
 
