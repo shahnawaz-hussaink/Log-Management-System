@@ -25,7 +25,6 @@
               "src/assets"
             ],
             "styles": [
-              "node_modules/docx-preview/dist/docx-preview.css",
               "src/styles.css"
             ],
             "scripts": []
@@ -85,7 +84,6 @@
               "src/assets"
             ],
             "styles": [
-              "node_modules/docx-preview/dist/docx-preview.css",
               "src/styles.css"
             ],
             "scripts": []
