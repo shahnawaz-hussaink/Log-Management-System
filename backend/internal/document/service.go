@@ -3,11 +3,17 @@ package document
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"io"
 	"log"
+	"math"
 	"mime/multipart"
 	"os"
 	"path/filepath"
@@ -20,6 +26,9 @@ import (
 	"github.com/pdfcpu/pdfcpu/pkg/api"
 	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu"
 	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu/types"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/basicfont"
+	"golang.org/x/image/math/fixed"
 )
 
 type Service interface {
@@ -415,7 +424,7 @@ func (s *service) TakeAction(docID, authenticatedUserID uuid.UUID, req ActionReq
 		if doc.DocumentTypeID != nil {
 			dt, errDT := s.repo.GetDocumentTypeByID(*doc.DocumentTypeID)
 			if errDT == nil {
-				if req.TargetID != nil {
+				if req.TargetID != nil && *req.TargetID != authenticatedUserID {
 					newStatus = models.StatusPendingApproval
 					nextOwnerID = *req.TargetID
 					doc.CurrentStage = doc.CurrentStage + 1
@@ -523,17 +532,17 @@ func (s *service) TakeAction(docID, authenticatedUserID uuid.UUID, req ActionReq
 		doc.AssignedAt = time.Now()
 	}
 
-	// Draw or type digital signature stamping
-	if req.Signature != "" {
+	var token string
+	if wfAction != models.ActionSentBack && wfAction != "Sent Back" {
+		hash := sha256.New()
+		hash.Write([]byte(fmt.Sprintf("%s-%s-%s-%d", doc.ID, authenticatedUserID, wfAction, time.Now().UnixNano())))
+		token = strings.ToUpper(hex.EncodeToString(hash.Sum(nil))[:12])
+
 		existingSigs, _ := s.repo.CountSignatures(doc.ID)
 		filePathLower := strings.ToLower(doc.FilePath)
 		if strings.HasSuffix(filePathLower, ".pdf") {
-			if err := stampSignatureOnPDF(doc.FilePath, req.Signature, existingSigs); err != nil {
-				log.Printf("Error overlaying signature on PDF: %v", err)
-			}
-		} else if strings.HasSuffix(filePathLower, ".docx") {
-			if err := stampSignatureOnDocx(doc.FilePath, req.Signature, existingSigs); err != nil {
-				log.Printf("Error overlaying signature on DOCX: %v", err)
+			if err := stampTextSignatureOnPDF(doc.FilePath, actorUser.Name, token, req.Remarks, existingSigs); err != nil {
+				log.Printf("Error overlaying text signature on PDF: %v", err)
 			}
 		}
 	}
@@ -571,7 +580,7 @@ func (s *service) TakeAction(docID, authenticatedUserID uuid.UUID, req ActionReq
 		TargetID:   req.TargetID,
 		Action:     wfAction,
 		Remarks:    req.Remarks,
-		Signature:  req.Signature,
+		Signature:  token,
 		ActorRole:  actorUser.Role,
 		Stage:      doc.CurrentStage,
 		Version:    doc.Version,
@@ -1056,32 +1065,21 @@ func (s *service) GetReports(schoolID uuid.UUID) (interface{}, error) {
 	}, nil
 }
 
-func stampSignatureOnPDF(pdfPath string, base64Signature string, existingSigCount int) error {
-	if base64Signature == "" {
-		return nil
-	}
+func stampTextSignatureOnPDF(pdfPath string, actorName string, token string, remarks string, existingSigCount int) error {
 	if !strings.HasSuffix(strings.ToLower(pdfPath), ".pdf") {
 		return nil
 	}
-	parts := strings.Split(base64Signature, ",")
-	base64Data := parts[len(parts)-1]
 
-	dec, err := base64.StdEncoding.DecodeString(base64Data)
-	if err != nil {
-		return err
-	}
-
-	tempDir := os.TempDir()
-	tempPNG := filepath.Join(tempDir, fmt.Sprintf("sig_temp_%d.png", time.Now().UnixNano()))
-	err = os.WriteFile(tempPNG, dec, 0644)
+	tempPNG, err := generateTransparentSignaturePNG(actorName, token, remarks)
 	if err != nil {
 		return err
 	}
 	defer os.Remove(tempPNG)
 
 	tempOutPDF := pdfPath + ".signed"
-	offsetX := -20 - (existingSigCount * 110)
-	desc := fmt.Sprintf("scale:0.25, pos:br, off:%d 20", offsetX)
+	offsetY := 20 + (existingSigCount * 65)
+	desc := fmt.Sprintf("scale:0.5 abs, pos:br, off:-20 %d, rot:0", offsetY)
+
 	wm, err := pdfcpu.ParseImageWatermarkDetails(tempPNG, desc, true, types.POINTS)
 	if err != nil {
 		return err
@@ -1099,6 +1097,88 @@ func stampSignatureOnPDF(pdfPath string, base64Signature string, existingSigCoun
 	}
 
 	return nil
+}
+
+func generateTransparentSignaturePNG(actorName, token, remarks string) (string, error) {
+	img := image.NewRGBA(image.Rect(0, 0, 380, 110))
+
+	green := color.RGBA{34, 197, 94, 255}
+	drawLine(img, 15, 60, 25, 75, green, 3)
+	drawLine(img, 25, 75, 42, 45, green, 3)
+
+	textColor := color.RGBA{15, 23, 42, 255}
+	d := &font.Drawer{
+		Dst:  img,
+		Src:  image.NewUniform(textColor),
+		Face: basicfont.Face7x13,
+	}
+
+	d.Dot = fixed.P(55, 25)
+	d.DrawString("Signature Valid")
+	d.Dot = fixed.P(56, 25)
+	d.DrawString("Signature Valid")
+
+	dateStr := time.Now().Format("2006.01.02 15:04:05 MST")
+	cleanRemarks := remarks
+	if len(cleanRemarks) > 40 {
+		cleanRemarks = cleanRemarks[:37] + "..."
+	}
+	if cleanRemarks == "" {
+		cleanRemarks = "Approved"
+	}
+
+	d.Dot = fixed.P(55, 45)
+	d.DrawString("Digitally signed by " + actorName)
+
+	d.Dot = fixed.P(55, 63)
+	d.DrawString("Date: " + dateStr)
+
+	d.Dot = fixed.P(55, 81)
+	d.DrawString("Reason: " + cleanRemarks)
+
+	d.Dot = fixed.P(55, 99)
+	d.DrawString("Token: " + token)
+
+	tempDir := os.TempDir()
+	tempPNGPath := filepath.Join(tempDir, fmt.Sprintf("sig_image_%d.png", time.Now().UnixNano()))
+	f, err := os.Create(tempPNGPath)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	err = png.Encode(f, img)
+	if err != nil {
+		os.Remove(tempPNGPath)
+		return "", err
+	}
+
+	return tempPNGPath, nil
+}
+
+func drawLine(img *image.RGBA, x1, y1, x2, y2 int, col color.Color, thickness int) {
+	dx := float64(x2 - x1)
+	dy := float64(y2 - y1)
+	steps := math.Abs(dx)
+	if math.Abs(dy) > steps {
+		steps = math.Abs(dy)
+	}
+	if steps == 0 {
+		return
+	}
+	xInc := dx / steps
+	yInc := dy / steps
+	x := float64(x1)
+	y := float64(y1)
+	for i := 0; i <= int(steps); i++ {
+		for tx := -thickness/2; tx <= thickness/2; tx++ {
+			for ty := -thickness/2; ty <= thickness/2; ty++ {
+				img.Set(int(x)+tx, int(y)+ty, col)
+			}
+		}
+		x += xInc
+		y += yInc
+	}
 }
 
 func stampSignatureOnDocx(docxPath string, base64Signature string, existingSigCount int) error {

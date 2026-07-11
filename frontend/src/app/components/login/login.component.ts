@@ -13,7 +13,7 @@ import { Router, RouterLink } from '@angular/router';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  email: string = 'alice@office.com';
+  email: string = 'alice@school.edu';
   password: string = 'password';
   error: string = '';
 

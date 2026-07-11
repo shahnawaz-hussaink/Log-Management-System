@@ -27,14 +27,7 @@ export class DetailsComponent implements OnInit {
   replaceError: string = '';
   replaceRemarks: string = '';
 
-  showSignModal: boolean = false;
   pdfCacheBuster: number = Date.now();
-  pendingAction: string = '';
-  signMode: 'draw' | 'type' = 'draw';
-  typedName: string = '';
-
-  private isDrawing: boolean = false;
-  private ctx: CanvasRenderingContext2D | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -97,122 +90,8 @@ export class DetailsComponent implements OnInit {
     window.open(`http://localhost:8080/api/documents/${this.document.ID}/download?token=${token}`, '_blank');
   }
 
-  openSignModal(action: string) {
-    this.pendingAction = action;
-    this.showSignModal = true;
-    this.typedName = this.currentUser.Name;
-    setTimeout(() => {
-      this.initCanvas();
-    }, 50);
-  }
-
-  setSignMode(mode: 'draw' | 'type') {
-    this.signMode = mode;
-    setTimeout(() => {
-      this.initCanvas();
-    }, 50);
-  }
-
-  initCanvas() {
-    const canvas = document.getElementById('sig-canvas') as HTMLCanvasElement | null;
-    if (!canvas) return;
-    canvas.setAttribute('width', '450');
-    canvas.setAttribute('height', '180');
-    this.ctx = canvas.getContext('2d');
-    if (!this.ctx) return;
-    
-    this.ctx.strokeStyle = '#1e3a8a';
-    this.ctx.lineWidth = 3;
-    this.ctx.lineCap = 'round';
-    
-    if (this.signMode === 'type') {
-      this.drawTypedSignature();
-    }
-  }
-
-  drawTypedSignature() {
-    if (!this.ctx) return;
-    this.ctx.clearRect(0, 0, 450, 180);
-    this.ctx.font = 'italic 36px "Brush Script MT", cursive, "Dancing Script"';
-    this.ctx.fillStyle = '#1e3a8a';
-    this.ctx.textAlign = 'center';
-    this.ctx.textBaseline = 'middle';
-    this.ctx.fillText(this.typedName || this.currentUser.Name, 225, 90);
-  }
-
-  startDrawing(event: MouseEvent | TouchEvent) {
-    if (this.signMode !== 'draw') return;
-    this.isDrawing = true;
-    const pos = this.getEventPos(event);
-    if (this.ctx && pos) {
-      this.ctx.beginPath();
-      this.ctx.moveTo(pos.x, pos.y);
-    }
-    event.preventDefault();
-  }
-
-  draw(event: MouseEvent | TouchEvent) {
-    if (!this.isDrawing || this.signMode !== 'draw' || !this.ctx) return;
-    const pos = this.getEventPos(event);
-    if (pos) {
-      this.ctx.lineTo(pos.x, pos.y);
-      this.ctx.stroke();
-    }
-    event.preventDefault();
-  }
-
-  stopDrawing() {
-    this.isDrawing = false;
-  }
-
-  clearCanvas() {
-    if (this.ctx) {
-      this.ctx.clearRect(0, 0, 450, 180);
-      if (this.signMode === 'type') {
-        this.drawTypedSignature();
-      }
-    }
-  }
-
-  private getEventPos(event: MouseEvent | TouchEvent): { x: number, y: number } | null {
-    const canvas = document.getElementById('sig-canvas');
-    if (!canvas) return null;
-    const rect = canvas.getBoundingClientRect();
-    
-    let clientX = 0;
-    let clientY = 0;
-    
-    if (event instanceof MouseEvent) {
-      clientX = event.clientX;
-      clientY = event.clientY;
-    } else if (event.touches && event.touches.length > 0) {
-      clientX = event.touches[0].clientX;
-      clientY = event.touches[0].clientY;
-    } else {
-      return null;
-    }
-    
-    return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    };
-  }
-
   submitAction(action: string) {
-    if (action === 'Sent Back') {
-      this.executeSubmitAction(action, '');
-    } else {
-      this.openSignModal(action);
-    }
-  }
-
-  confirmSignature() {
-    const canvas = document.getElementById('sig-canvas') as HTMLCanvasElement | null;
-    if (!canvas) return;
-    
-    const signatureBase64 = canvas.toDataURL('image/png');
-    this.showSignModal = false;
-    this.executeSubmitAction(this.pendingAction, signatureBase64);
+    this.executeSubmitAction(action, '');
   }
 
   executeSubmitAction(action: string, signature: string) {

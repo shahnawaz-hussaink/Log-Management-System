@@ -124,11 +124,23 @@ The Angular frontend provides dashboard controls for document actions, tracking 
 
 ## 4. Test Accounts
 
-The database is pre-seeded with three mock users. You can log in on the login screen by entering one of these email addresses along with the default password **`password`**:
+The database is pre-seeded with mock users. You can log in on the login screen by entering one of these email addresses along with the default password **`password`**:
 
-- **Alice Smith** (Uploader / Owner): `alice@office.com`
-- **Bob Jones** (Approver): `bob@office.com`
-- **Charlie Brown** (Approver): `charlie@office.com`
+### Students
+- **Alice Smith**: `alice@school.edu` (Class 10-A)
+
+### Teachers
+- **Bob Johnson**: `bob@school.edu` (Subject: Science, Class 10-A)
+- **Diana Prince**: `diana@school.edu` (Subject: History, Class 10-B)
+- **Evan Wright**: `evan@school.edu` (Subject: Mathematics, Class 10-C)
+- **Fiona Gallagher**: `fiona@school.edu` (Subject: English, Class 10-D)
+
+### Principals
+- **Charlie Brown**: `charlie@school.edu`
+- **George Vance**: `george@school.edu`
+
+### Parents
+- **David Smith**: `david@school.edu` (Parent of Alice Smith)
 
 ---
 

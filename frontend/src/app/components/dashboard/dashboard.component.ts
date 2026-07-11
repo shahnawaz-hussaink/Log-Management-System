@@ -19,7 +19,7 @@ export class DashboardComponent implements OnInit {
   searchText: string = '';
   documentTypes: any[] = [];
   selectedFolder: string = 'All';
-  activeTab: string = 'pending_me';
+  activeTab: string = 'all_files';
   selectedPriority: string = 'All';
   reportsData: any = null;
 
@@ -43,7 +43,7 @@ export class DashboardComponent implements OnInit {
       this.applyFilter();
     });
     
-    if (this.currentUser.Role === 'Teacher' || this.currentUser.Role === 'Principal') {
+    if (this.currentUser.Role === 'Admin') {
       this.loadReports();
     }
   }
@@ -106,19 +106,35 @@ export class DashboardComponent implements OnInit {
     }
 
     // 3. Tab filter
-    const now = new Date();
-    const currentUserIdLower = (this.currentUser.ID || this.currentUser.id || '').toLowerCase();
-    
-    if (this.activeTab === 'pending_me') {
-      list = list.filter(doc => (doc.CurrentOwnerID || '').toLowerCase() === currentUserIdLower && doc.Status !== 'Approved' && doc.Status !== 'Rejected' && doc.Status !== 'Closed' && doc.Status !== 'Archived');
-    } else if (this.activeTab === 'sent_out') {
-      list = list.filter(doc => (doc.UploaderID || '').toLowerCase() === currentUserIdLower && (doc.CurrentOwnerID || '').toLowerCase() !== currentUserIdLower && doc.Status !== 'Approved' && doc.Status !== 'Rejected' && doc.Status !== 'Closed' && doc.Status !== 'Archived');
-    } else if (this.activeTab === 'overdue') {
-      list = list.filter(doc => (doc.Status === 'Pending Approval' || doc.Status === 'Sent Back') && doc.SlaDeadline && new Date(doc.SlaDeadline) < now);
-    } else if (this.activeTab === 'approved') {
-      list = list.filter(doc => doc.Status === 'Approved' && ((doc.UploaderID || '').toLowerCase() === currentUserIdLower || (doc.CurrentOwnerID || '').toLowerCase() === currentUserIdLower));
-    } else if (this.activeTab === 'archived_closed') {
-      list = list.filter(doc => doc.Status === 'Closed' || doc.Status === 'Archived');
+    if (this.activeTab !== 'all_files') {
+      const now = new Date();
+      const currentUserIdLower = (this.currentUser.ID || this.currentUser.id || '').toLowerCase();
+      
+      if (this.currentUser.Role === 'Admin') {
+        if (this.activeTab === 'pending_me') {
+          list = list.filter(doc => doc.Status !== 'Approved' && doc.Status !== 'Rejected' && doc.Status !== 'Closed' && doc.Status !== 'Archived');
+        } else if (this.activeTab === 'sent_out') {
+          list = [];
+        } else if (this.activeTab === 'overdue') {
+          list = list.filter(doc => (doc.Status === 'Pending Approval' || doc.Status === 'Sent Back') && doc.SlaDeadline && new Date(doc.SlaDeadline) < now);
+        } else if (this.activeTab === 'approved') {
+          list = list.filter(doc => doc.Status === 'Approved');
+        } else if (this.activeTab === 'archived_closed') {
+          list = list.filter(doc => doc.Status === 'Closed' || doc.Status === 'Archived');
+        }
+      } else {
+        if (this.activeTab === 'pending_me') {
+          list = list.filter(doc => (doc.CurrentOwnerID || '').toLowerCase() === currentUserIdLower && doc.Status !== 'Approved' && doc.Status !== 'Rejected' && doc.Status !== 'Closed' && doc.Status !== 'Archived');
+        } else if (this.activeTab === 'sent_out') {
+          list = list.filter(doc => (doc.UploaderID || '').toLowerCase() === currentUserIdLower && (doc.CurrentOwnerID || '').toLowerCase() !== currentUserIdLower && doc.Status !== 'Approved' && doc.Status !== 'Rejected' && doc.Status !== 'Closed' && doc.Status !== 'Archived');
+        } else if (this.activeTab === 'overdue') {
+          list = list.filter(doc => (doc.Status === 'Pending Approval' || doc.Status === 'Sent Back') && doc.SlaDeadline && new Date(doc.SlaDeadline) < now);
+        } else if (this.activeTab === 'approved') {
+          list = list.filter(doc => doc.Status === 'Approved' && ((doc.UploaderID || '').toLowerCase() === currentUserIdLower || (doc.CurrentOwnerID || '').toLowerCase() === currentUserIdLower));
+        } else if (this.activeTab === 'archived_closed') {
+          list = list.filter(doc => doc.Status === 'Closed' || doc.Status === 'Archived');
+        }
+      }
     }
 
     this.filteredDocuments = list;
@@ -134,19 +150,36 @@ export class DashboardComponent implements OnInit {
 
   getTabCount(tab: string): number {
     let list = this.documents;
+    if (tab === 'all_files') {
+      return list.length;
+    }
     const now = new Date();
     const currentUserIdLower = (this.currentUser.ID || this.currentUser.id || '').toLowerCase();
 
-    if (tab === 'pending_me') {
-      list = list.filter(doc => (doc.CurrentOwnerID || '').toLowerCase() === currentUserIdLower && doc.Status !== 'Approved' && doc.Status !== 'Rejected' && doc.Status !== 'Closed' && doc.Status !== 'Archived');
-    } else if (tab === 'sent_out') {
-      list = list.filter(doc => (doc.UploaderID || '').toLowerCase() === currentUserIdLower && (doc.CurrentOwnerID || '').toLowerCase() !== currentUserIdLower && doc.Status !== 'Approved' && doc.Status !== 'Rejected' && doc.Status !== 'Closed' && doc.Status !== 'Archived');
-    } else if (tab === 'overdue') {
-      list = list.filter(doc => (doc.Status === 'Pending Approval' || doc.Status === 'Sent Back') && doc.SlaDeadline && new Date(doc.SlaDeadline) < now);
-    } else if (tab === 'approved') {
-      list = list.filter(doc => doc.Status === 'Approved' && ((doc.UploaderID || '').toLowerCase() === currentUserIdLower || (doc.CurrentOwnerID || '').toLowerCase() === currentUserIdLower));
-    } else if (tab === 'archived_closed') {
-      list = list.filter(doc => doc.Status === 'Closed' || doc.Status === 'Archived');
+    if (this.currentUser.Role === 'Admin') {
+      if (tab === 'pending_me') {
+        list = list.filter(doc => doc.Status !== 'Approved' && doc.Status !== 'Rejected' && doc.Status !== 'Closed' && doc.Status !== 'Archived');
+      } else if (tab === 'sent_out') {
+        list = [];
+      } else if (tab === 'overdue') {
+        list = list.filter(doc => (doc.Status === 'Pending Approval' || doc.Status === 'Sent Back') && doc.SlaDeadline && new Date(doc.SlaDeadline) < now);
+      } else if (tab === 'approved') {
+        list = list.filter(doc => doc.Status === 'Approved');
+      } else if (tab === 'archived_closed') {
+        list = list.filter(doc => doc.Status === 'Closed' || doc.Status === 'Archived');
+      }
+    } else {
+      if (tab === 'pending_me') {
+        list = list.filter(doc => (doc.CurrentOwnerID || '').toLowerCase() === currentUserIdLower && doc.Status !== 'Approved' && doc.Status !== 'Rejected' && doc.Status !== 'Closed' && doc.Status !== 'Archived');
+      } else if (tab === 'sent_out') {
+        list = list.filter(doc => (doc.UploaderID || '').toLowerCase() === currentUserIdLower && (doc.CurrentOwnerID || '').toLowerCase() !== currentUserIdLower && doc.Status !== 'Approved' && doc.Status !== 'Rejected' && doc.Status !== 'Closed' && doc.Status !== 'Archived');
+      } else if (tab === 'overdue') {
+        list = list.filter(doc => (doc.Status === 'Pending Approval' || doc.Status === 'Sent Back') && doc.SlaDeadline && new Date(doc.SlaDeadline) < now);
+      } else if (tab === 'approved') {
+        list = list.filter(doc => doc.Status === 'Approved' && ((doc.UploaderID || '').toLowerCase() === currentUserIdLower || (doc.CurrentOwnerID || '').toLowerCase() === currentUserIdLower));
+      } else if (tab === 'archived_closed') {
+        list = list.filter(doc => doc.Status === 'Closed' || doc.Status === 'Archived');
+      }
     }
     return list.length;
   }

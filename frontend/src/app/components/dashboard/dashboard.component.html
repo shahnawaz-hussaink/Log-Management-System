@@ -58,12 +58,27 @@
 
     <!-- Navigation Tab Buttons -->
     <div class="flex border-b border-slate-100 gap-1 mt-2 sm:mt-0">
+      <!-- Common All Files Tab -->
       <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer"
-              [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'pending_me', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'pending_me'}"
-              (click)="selectTab('pending_me')">Pending with me ({{ getTabCount('pending_me') }})</button>
-      <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer"
-              [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'sent_out', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'sent_out'}"
-              (click)="selectTab('sent_out')">Sent out ({{ getTabCount('sent_out') }})</button>
+              [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'all_files', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'all_files'}"
+              (click)="selectTab('all_files')">All ({{ getTabCount('all_files') }})</button>
+      <!-- Admin Specific Tabs -->
+      <ng-container *ngIf="currentUser.Role === 'Admin'">
+        <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer"
+                [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'pending_me', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'pending_me'}"
+                (click)="selectTab('pending_me')">Pending Review ({{ getTabCount('pending_me') }})</button>
+      </ng-container>
+      
+      <!-- Non-Admin Tabs -->
+      <ng-container *ngIf="currentUser.Role !== 'Admin'">
+        <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer"
+                [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'pending_me', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'pending_me'}"
+                (click)="selectTab('pending_me')">Pending with me ({{ getTabCount('pending_me') }})</button>
+        <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer"
+                [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'sent_out', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'sent_out'}"
+                (click)="selectTab('sent_out')">Sent out ({{ getTabCount('sent_out') }})</button>
+      </ng-container>
+
       <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer"
               [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'overdue', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'overdue'}"
               (click)="selectTab('overdue')">Overdue ({{ getTabCount('overdue') }})</button>
@@ -125,8 +140,8 @@
     </div>
   </div>
 
-  <!-- Analytical Reports Panel (Only visible for Principal / Teacher) -->
-  <div class="mt-8 space-y-6" *ngIf="reportsData && (currentUser.Role === 'Principal' || currentUser.Role === 'Teacher')">
+  <!-- Analytical Reports Panel (Only visible for Admin) -->
+  <div class="mt-8 space-y-6" *ngIf="reportsData && currentUser.Role === 'Admin'">
     <hr class="border-[var(--border)] my-8">
     <h2 class="text-xl font-bold text-[var(--text-primary)]">📊 Administrative Reports & Metrics</h2>
     
