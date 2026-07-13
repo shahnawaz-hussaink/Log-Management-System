@@ -71,16 +71,20 @@
           </div>
 
 
-          <div class="mb-5">
+          <!-- Conditional Forward selection dropdown -->
+          <div *ngIf="showForwardSelect" class="mb-5 p-4 bg-slate-50 border border-slate-200 rounded-xl">
             <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Forward to (Teacher / Principal)</label>
-            <select class="app-input cursor-pointer" [(ngModel)]="selectedUser">
-              <option *ngFor="let user of users" [value]="user.id || user.ID">{{ user.name || user.Name }}</option>
-            </select>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <select class="app-input cursor-pointer flex-1" [(ngModel)]="selectedUser">
+                <option *ngFor="let user of users" [value]="user.id || user.ID">{{ user.name || user.Name }}</option>
+              </select>
+              <button class="app-btn-primary cursor-pointer whitespace-nowrap" (click)="submitAction('Forwarded')">Confirm Forward</button>
+            </div>
           </div>
           
           <div class="flex flex-wrap gap-3">
             <button class="app-btn-primary bg-[var(--accent)] hover:bg-[var(--accent-hover)] border-0 flex-1 sm:flex-initial cursor-pointer" (click)="submitAction('Approved')">Approve</button>
-            <button class="app-btn-primary flex-1 sm:flex-initial cursor-pointer" (click)="submitAction('Forwarded')">Forward</button>
+            <button class="app-btn-primary flex-1 sm:flex-initial cursor-pointer" (click)="toggleForwardSelect()">Forward</button>
             <button class="app-btn-primary bg-[var(--warning)] hover:bg-amber-600 border-0 flex-1 sm:flex-initial cursor-pointer" (click)="submitAction('Sent Back')">Send Back for Revision</button>
             
             <!-- Close authority -->

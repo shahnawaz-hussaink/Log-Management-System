@@ -29,6 +29,7 @@ export class DetailsComponent implements OnInit {
 
   pdfCacheBuster: number = Date.now();
   safePdfUrl: SafeResourceUrl | null = null;
+  showForwardSelect: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -37,6 +38,10 @@ export class DetailsComponent implements OnInit {
     public router: Router,
     private sanitizer: DomSanitizer
   ) {}
+
+  toggleForwardSelect() {
+    this.showForwardSelect = !this.showForwardSelect;
+  }
 
   ngOnInit() {
     this.currentUser = this.auth.getCurrentUser();
@@ -101,12 +106,21 @@ export class DetailsComponent implements OnInit {
   }
 
   executeSubmitAction(action: string, signature: string) {
+    if ((action === 'Sent Back' || action === 'Rejected') && !this.actionRemarks.trim()) {
+      alert(`Please enter your Remarks / Noting Sheet comments for this ${action.toLowerCase()} action.`);
+      return;
+    }
+
     let target = null;
     if (action === 'Sent Back' || action === 'Rejected') {
       target = this.document.UploaderID;
     } else if (action === 'Approved') {
       target = this.currentUser.ID; // or specific user
     } else if (action === 'Forwarded') {
+      if (!this.selectedUser) {
+        alert('Please select a user to forward this document to.');
+        return;
+      }
       target = this.selectedUser;
     }
 
@@ -116,9 +130,16 @@ export class DetailsComponent implements OnInit {
       action: action,
       remarks: this.actionRemarks,
       signature: signature
-    }).subscribe(() => {
-      this.loadDetails(this.document.ID);
-      this.actionRemarks = '';
+    }).subscribe({
+      next: () => {
+        this.loadDetails(this.document.ID);
+        this.actionRemarks = '';
+        this.showForwardSelect = false;
+      },
+      error: (err) => {
+        console.error('Failed to submit action:', err);
+        alert(err.error?.message || 'Failed to submit action. Please make sure all required fields are filled.');
+      }
     });
   }
 
