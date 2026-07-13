@@ -1,6 +1,3 @@
-<div class="mt-4 max-w-7xl mx-auto px-4" *ngIf="document">
-  <div class="flex justify-between items-center mb-6">
-    <button class="app-btn-secondary cursor-pointer" (click)="router.navigate(['/dashboard'])">&larr; Back to Dashboard</button>
 <div class="mt-4 max-w-7xl mx-auto px-4">
   <!-- Loading State -->
   <div *ngIf="loading" class="py-16 text-center">
@@ -11,14 +8,7 @@
   <ng-container *ngIf="!loading && document">
     <div class="flex justify-between items-center mb-6">
       <button class="app-btn-secondary cursor-pointer" (click)="router.navigate(['/dashboard'])">&larr; Back to Dashboard</button>
-    
-    <!-- Recall button if uploader and pending -->
-    <button *ngIf="(document.UploaderID || '').toLowerCase() === (currentUser.ID || currentUser.id || '').toLowerCase() && document.Status === 'Pending Approval'"
-            class="app-btn-primary bg-[var(--warning)] hover:bg-amber-600 border-0 flex items-center gap-1.5 cursor-pointer"
-            (click)="recallDocument()">
-      ↩️ Recall File
-    </button>
-  </div>
+    </div>
   
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
     <!-- Main Content: Document Metadata and Actions -->

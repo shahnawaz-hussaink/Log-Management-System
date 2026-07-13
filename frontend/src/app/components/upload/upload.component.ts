@@ -22,7 +22,6 @@ export class UploadComponent implements OnInit {
   category: string = 'Assignment';
   tags: string = '';
   priority: string = 'Normal';
-  direction: string = 'Inward';
   error: string = '';
   loading: boolean = false;
 
@@ -89,7 +88,6 @@ export class UploadComponent implements OnInit {
     formData.append('category', this.category);
     formData.append('tags', this.tags);
     formData.append('priority', this.priority);
-    formData.append('direction', this.direction);
 
     this.loading = true;
     this.api.uploadDocument(formData).subscribe({
