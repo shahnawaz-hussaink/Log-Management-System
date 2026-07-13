@@ -73,6 +73,14 @@ export class AdminComponent implements OnInit {
     if (this.isSuperAdmin) {
       this.loadSchools();
     }
+
+    // Subscribe to query params for global sidebar navigation
+    this.route.queryParams.subscribe(params => {
+      if (params['section']) {
+        this.activeSection = params['section'];
+        this.clearMessages();
+      }
+    });
   }
 
   setSection(section: string) {

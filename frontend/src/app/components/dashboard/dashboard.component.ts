@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -27,7 +27,12 @@ export class DashboardComponent implements OnInit {
   filteredHistoryEntries: any[] = [];
   loadingHistory: boolean = false;
 
-  constructor(private api: ApiService, private auth: AuthService, private router: Router) {}
+  constructor(
+    private api: ApiService, 
+    private auth: AuthService, 
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
     this.currentUser = this.auth.getCurrentUser();
@@ -55,6 +60,14 @@ export class DashboardComponent implements OnInit {
       if (tab === 'archived_closed') {
         this.loadHistory();
       } else {
+        this.applyFilter();
+      }
+    });
+
+    // Subscribe to folder parameters from global sidebar
+    this.route.queryParams.subscribe(params => {
+      if (params['folder']) {
+        this.selectedFolder = params['folder'];
         this.applyFilter();
       }
     });
@@ -259,5 +272,53 @@ export class DashboardComponent implements OnInit {
 
   goToDetails(id: string) {
     this.router.navigate(['/details', id]);
+  }
+
+  getCategoryDocCount(categoryName: string): number {
+    return this.documents.filter(doc => doc.Category?.toLowerCase() === categoryName.toLowerCase()).length;
+  }
+
+  getCategoryApprovedCount(categoryName: string): number {
+    return this.documents.filter(doc => doc.Category?.toLowerCase() === categoryName.toLowerCase() && doc.Status === 'Approved').length;
+  }
+
+  getOtherDocsCount(): number {
+    return this.documents.filter(doc => {
+      const cat = doc.Category?.toLowerCase() || '';
+      return cat !== 'assignment' && cat !== 'leave application';
+    }).length;
+  }
+
+  getOtherApprovedCount(): number {
+    return this.documents.filter(doc => {
+      const cat = doc.Category?.toLowerCase() || '';
+      return cat !== 'assignment' && cat !== 'leave application' && doc.Status === 'Approved';
+    }).length;
+  }
+
+  getLauncherColorClass(categoryName: string): string {
+    const n = categoryName.toLowerCase();
+    if (n.includes('assign')) return 'bg-blue-50 text-blue-650 border border-blue-150';
+    if (n.includes('leave')) return 'bg-emerald-50 text-emerald-650 border border-emerald-150';
+    if (n.includes('permis')) return 'bg-amber-55/60 text-amber-650 border border-amber-150';
+    if (n.includes('transf') || n.includes('certif')) return 'bg-purple-50 text-purple-650 border border-purple-150';
+    if (n.includes('fee') || n.includes('concess')) return 'bg-rose-50 text-rose-650 border border-rose-150';
+    return 'bg-slate-50 text-slate-650 border border-slate-150';
+  }
+
+  getCategoryIcon(name: string): string {
+    const n = name.toLowerCase();
+    if (n.includes('assign')) return '📝';
+    if (n.includes('leave')) return '📅';
+    if (n.includes('permis')) return '🔑';
+    if (n.includes('transf') || n.includes('certif')) return '🎓';
+    if (n.includes('fee') || n.includes('concess')) return '💰';
+    return '📁';
+  }
+
+  launchNewDoc(categoryName: string) {
+    const type = this.documentTypes.find(dt => dt.Name === categoryName);
+    const slug = type ? type.Slug : '';
+    this.router.navigate(['/upload'], { queryParams: { category: slug } });
   }
 }

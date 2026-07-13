@@ -22,6 +22,12 @@ export class AppComponent implements OnInit, OnDestroy {
   activeTab: string = 'pending_me';
   private intervalId: any;
 
+  // Sidebar & Category States
+  isSidebarCollapsed: boolean = false;
+  activeAdminSection: string = 'overview';
+  documentTypes: any[] = [];
+  selectedFolder: string = 'All';
+
   constructor(
     public authService: AuthService,
     private api: ApiService,
@@ -32,8 +38,10 @@ export class AppComponent implements OnInit, OnDestroy {
     this.authService.currentUser$.subscribe(user => {
       if (user) {
         this.startNotificationsPolling();
+        this.loadDocumentTypes();
       } else {
         this.stopNotificationsPolling();
+        this.documentTypes = [];
       }
     });
 
@@ -135,5 +143,53 @@ export class AppComponent implements OnInit, OnDestroy {
     this.stopNotificationsPolling();
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  // Sidebar navigation helpers
+  loadDocumentTypes() {
+    this.api.getDocumentTypes().subscribe({
+      next: (types) => {
+        this.documentTypes = types || [];
+      },
+      error: (err) => console.error('Failed to load document types in App:', err)
+    });
+  }
+
+  toggleTheme() {
+    document.documentElement.classList.toggle('dark');
+  }
+
+  toggleSidebar() {
+    this.isSidebarCollapsed = !this.isSidebarCollapsed;
+  }
+
+  isActiveDashboard(): boolean {
+    return this.router.url.startsWith('/dashboard');
+  }
+
+  navigateToDashboard() {
+    this.selectedFolder = 'All';
+    this.api.activeTabSubject.next('all_files');
+    this.router.navigate(['/dashboard'], { queryParams: { folder: 'All' } });
+  }
+
+  navigateToAdminSection(section: string) {
+    this.activeAdminSection = section;
+    this.router.navigate(['/admin'], { queryParams: { section } });
+  }
+
+  selectSidebarFolder(folder: string) {
+    this.selectedFolder = folder;
+    this.router.navigate(['/dashboard'], { queryParams: { folder } });
+  }
+
+  getCategoryIcon(name: string): string {
+    const n = name.toLowerCase();
+    if (n.includes('assign')) return '📝';
+    if (n.includes('leave')) return '📅';
+    if (n.includes('permis')) return '🔑';
+    if (n.includes('transf') || n.includes('certif')) return '🎓';
+    if (n.includes('fee') || n.includes('concess')) return '💰';
+    return '📁';
   }
 }

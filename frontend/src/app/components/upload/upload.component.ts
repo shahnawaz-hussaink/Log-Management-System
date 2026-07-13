@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -25,7 +25,12 @@ export class UploadComponent implements OnInit {
   error: string = '';
   loading: boolean = false;
 
-  constructor(private api: ApiService, private auth: AuthService, private router: Router) {}
+  constructor(
+    private api: ApiService, 
+    private auth: AuthService, 
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit() {
     if (!this.auth.getCurrentUser()) {
@@ -38,6 +43,16 @@ export class UploadComponent implements OnInit {
         this.documentTypes = res;
         if (this.documentTypes.length > 0) {
           this.category = this.documentTypes[0].Name;
+          
+          // Pre-select category if matching slug exists in query parameters
+          this.route.queryParams.subscribe(params => {
+            if (params['category']) {
+              const matched = this.documentTypes.find(dt => dt.Slug === params['category'] || dt.Name.toLowerCase() === params['category'].toLowerCase());
+              if (matched) {
+                this.category = matched.Name;
+              }
+            }
+          });
         }
       },
       error: (err) => console.error('Failed to load document types:', err)
