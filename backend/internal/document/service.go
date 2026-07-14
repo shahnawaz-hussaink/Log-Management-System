@@ -32,7 +32,7 @@ import (
 )
 
 type Service interface {
-	Upload(uploaderID, targetOwnerID uuid.UUID, title, description, category, tags, priority, direction string, fileHeader *multipart.FileHeader) (*DocumentResponse, error)
+	Upload(uploaderID, targetOwnerID uuid.UUID, title, description, category, tags, priority, direction, targetClass string, fileHeader *multipart.FileHeader) (*DocumentResponse, error)
 	List(userID uuid.UUID, search string) ([]DocumentResponse, error)
 	GetDetails(docID, authenticatedUserID uuid.UUID) (*DocumentDetailsResponse, error)
 	GetFilePathForDownload(docID, authenticatedUserID uuid.UUID) (string, error)
@@ -60,7 +60,7 @@ func NewService(repo Repository, uploadsDir string) Service {
 	return &service{repo: repo, uploadsDir: uploadsDir}
 }
 
-func (s *service) Upload(uploaderID, targetOwnerID uuid.UUID, title, description, category, tags, priority, direction string, fileHeader *multipart.FileHeader) (*DocumentResponse, error) {
+func (s *service) Upload(uploaderID, targetOwnerID uuid.UUID, title, description, category, tags, priority, direction, targetClass string, fileHeader *multipart.FileHeader) (*DocumentResponse, error) {
 	src, err := fileHeader.Open()
 	if err != nil {
 		return nil, err
@@ -101,11 +101,22 @@ func (s *service) Upload(uploaderID, targetOwnerID uuid.UUID, title, description
 	schoolID = uploaderUser.SchoolID
 
 	var targetUser models.User
-	if err := s.repo.(*repository).db.First(&targetUser, "id = ?", targetOwnerID).Error; err != nil {
-		return nil, errors.New("approver not found")
-	}
-	if targetUser.Role == "Admin" || targetUser.Role == "SuperAdmin" || targetUser.Role == "Parent" {
-		return nil, errors.New("cannot assign documents to admins or parents")
+	assignedOwnerID := targetOwnerID
+	docStatus := models.StatusPendingApproval
+
+	if category == "Circular" {
+		if uploaderUser.Role == "Student" || uploaderUser.Role == "Parent" {
+			return nil, errors.New("only teachers and principals can upload circulars")
+		}
+		assignedOwnerID = uploaderID
+		docStatus = models.StatusApproved // Immediately visible
+	} else {
+		if err := s.repo.(*repository).db.First(&targetUser, "id = ?", targetOwnerID).Error; err != nil {
+			return nil, errors.New("approver not found")
+		}
+		if targetUser.Role == "Admin" || targetUser.Role == "SuperAdmin" || targetUser.Role == "Parent" {
+			return nil, errors.New("cannot assign documents to admins or parents")
+		}
 	}
 
 	var docTypeID *uuid.UUID
@@ -117,7 +128,6 @@ func (s *service) Upload(uploaderID, targetOwnerID uuid.UUID, title, description
 		}
 	}
 
-	assignedOwnerID := targetOwnerID
 
 	docID := uuid.New()
 	doc := &models.Document{
@@ -128,7 +138,7 @@ func (s *service) Upload(uploaderID, targetOwnerID uuid.UUID, title, description
 		FilePath:       destPath,
 		UploaderID:     uploaderID,
 		CurrentOwnerID: assignedOwnerID,
-		Status:         models.StatusPendingApproval,
+		Status:         docStatus,
 		Title:          title,
 		Description:    description,
 		UniqueNumber:   uniqueNum,
@@ -136,6 +146,7 @@ func (s *service) Upload(uploaderID, targetOwnerID uuid.UUID, title, description
 		Category:       category,
 		Priority:       fallbackString(priority, "Normal"),
 		Direction:      fallbackString(direction, "Inward"),
+		TargetClass:    targetClass,
 		AssignedAt:     time.Now(),
 		Version:        1,
 		CurrentStage:   1,
@@ -691,6 +702,27 @@ func (s *service) authorizeDocAccess(doc *models.Document, userID uuid.UUID) err
 			return nil
 		}
 		return errors.New("you are not authorized to view this document (outside school scope)")
+	}
+
+	// Circular access
+	if doc.Category == "Circular" {
+		if doc.TargetClass == "All" {
+			return nil
+		}
+		if user.Role == "Teacher" || user.Role == "Student" {
+			if doc.TargetClass == user.ClassSection {
+				return nil
+			}
+		}
+		if user.Role == "Parent" {
+			var count int64
+			s.repo.(*repository).db.Model(&models.User{}).
+				Where("id IN (SELECT child_id FROM parent_children WHERE parent_id = ?) AND class_section = ?", userID, doc.TargetClass).
+				Count(&count)
+			if count > 0 {
+				return nil
+			}
+		}
 	}
 
 	// Owner or uploader has direct access

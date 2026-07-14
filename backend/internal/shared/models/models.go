@@ -91,6 +91,7 @@ type Document struct {
 	Metadata        string    `gorm:"type:text"` // JSON object containing form fields
 	Priority        string    `gorm:"size:50;default:'Normal'"` // Normal, Urgent, Confidential
 	Direction       string    `gorm:"size:50;default:'Inward'"` // Inward, Outward
+	TargetClass     string    `gorm:"size:50"` // e.g. "All", "10-A" for circulars
 	AssignedAt      time.Time `gorm:"default:now()"`
 	ReferralOwnerID *uuid.UUID `gorm:"type:uuid"` // Nullable: stores original owner during refer/detour
 	NotingSheet     string    `gorm:"type:text"` // Running commentaries

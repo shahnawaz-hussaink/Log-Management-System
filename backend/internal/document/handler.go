@@ -23,25 +23,31 @@ func (h *Handler) Upload(c echo.Context) error {
 	authenticatedUserIDStr := c.Get("user_id").(string)
 	uploaderID, _ := uuid.Parse(authenticatedUserIDStr)
 
+	category := c.FormValue("category")
+
 	targetOwnerIDStr := c.FormValue("target_owner_id")
-	targetOwnerID, err := uuid.Parse(targetOwnerIDStr)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid target owner ID"})
+	var targetOwnerID uuid.UUID
+	var err error
+	if category != "Circular" {
+		targetOwnerID, err = uuid.Parse(targetOwnerIDStr)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid target owner ID"})
+		}
 	}
 
 	title := c.FormValue("title")
 	description := c.FormValue("description")
-	category := c.FormValue("category")
 	tags := c.FormValue("tags")
 	priority := c.FormValue("priority")
 	direction := c.FormValue("direction")
+	targetClass := c.FormValue("target_class")
 
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "File is required"})
 	}
 
-	res, err := h.service.Upload(uploaderID, targetOwnerID, title, description, category, tags, priority, direction, fileHeader)
+	res, err := h.service.Upload(uploaderID, targetOwnerID, title, description, category, tags, priority, direction, targetClass, fileHeader)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}

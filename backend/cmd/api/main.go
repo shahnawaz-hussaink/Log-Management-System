@@ -280,60 +280,68 @@ func seedData(gormDB *gorm.DB) {
 	}
 
 	// 3. Seed Document Types
-	var docTypeCount int64
-	gormDB.Model(&models.DocumentType{}).Count(&docTypeCount)
-	if docTypeCount == 0 {
-		docTypes := []models.DocumentType{
-			{
-				SchoolID:          school.ID,
-				Name:              "Assignment",
-				Slug:              "assignment",
-				WorkflowStages:    `[{"stage": 1, "role": "Teacher", "label": "Subject Teacher", "optional": false}]`,
-				RequiredFields:    `[]`,
-				SlaHours:          72,
-				NeedsParentCosign: false,
-			},
-			{
-				SchoolID:          school.ID,
-				Name:              "Leave Application",
-				Slug:              "leave-application",
-				WorkflowStages:    `[{"stage": 1, "role": "Teacher", "label": "Class Teacher", "optional": false}, {"stage": 2, "role": "Principal", "label": "Principal Approval", "optional": true, "condition": "leave_days > 3"}]`,
-				RequiredFields:    `["from_date", "to_date", "reason", "leave_days"]`,
-				SlaHours:          48,
-				NeedsParentCosign: false,
-			},
-			{
-				SchoolID:          school.ID,
-				Name:              "Report",
-				Slug:              "report",
-				WorkflowStages:    `[{"stage": 1, "role": "Teacher", "label": "Class Teacher", "optional": false}]`,
-				RequiredFields:    `[]`,
-				SlaHours:          72,
-				NeedsParentCosign: false,
-			},
-			{
-				SchoolID:          school.ID,
-				Name:              "Permission Slip",
-				Slug:              "permission-slip",
-				WorkflowStages:    `[{"stage": 1, "role": "Teacher", "label": "Class Teacher", "optional": false}]`,
-				RequiredFields:    `["event_name", "event_date"]`,
-				SlaHours:          24,
-				NeedsParentCosign: false,
-			},
-			{
-				SchoolID:          school.ID,
-				Name:              "General Request Letter",
-				Slug:              "general-request-letter",
-				WorkflowStages:    `[{"stage": 1, "role": "Teacher", "label": "Teacher Acknowledgement", "optional": false}]`,
-				RequiredFields:    `[]`,
-				SlaHours:          120,
-				NeedsParentCosign: false,
-			},
-		}
-		for i := range docTypes {
+	docTypes := []models.DocumentType{
+		{
+			SchoolID:          school.ID,
+			Name:              "Assignment",
+			Slug:              "assignment",
+			WorkflowStages:    `[{"stage": 1, "role": "Teacher", "label": "Subject Teacher", "optional": false}]`,
+			RequiredFields:    `[]`,
+			SlaHours:          72,
+			NeedsParentCosign: false,
+		},
+		{
+			SchoolID:          school.ID,
+			Name:              "Leave Application",
+			Slug:              "leave-application",
+			WorkflowStages:    `[{"stage": 1, "role": "Teacher", "label": "Class Teacher", "optional": false}, {"stage": 2, "role": "Principal", "label": "Principal Approval", "optional": true, "condition": "leave_days > 3"}]`,
+			RequiredFields:    `["from_date", "to_date", "reason", "leave_days"]`,
+			SlaHours:          48,
+			NeedsParentCosign: false,
+		},
+		{
+			SchoolID:          school.ID,
+			Name:              "Report",
+			Slug:              "report",
+			WorkflowStages:    `[{"stage": 1, "role": "Teacher", "label": "Class Teacher", "optional": false}]`,
+			RequiredFields:    `[]`,
+			SlaHours:          72,
+			NeedsParentCosign: false,
+		},
+		{
+			SchoolID:          school.ID,
+			Name:              "Permission Slip",
+			Slug:              "permission-slip",
+			WorkflowStages:    `[{"stage": 1, "role": "Teacher", "label": "Class Teacher", "optional": false}]`,
+			RequiredFields:    `["event_name", "event_date"]`,
+			SlaHours:          24,
+			NeedsParentCosign: false,
+		},
+		{
+			SchoolID:          school.ID,
+			Name:              "General Request Letter",
+			Slug:              "general-request-letter",
+			WorkflowStages:    `[{"stage": 1, "role": "Teacher", "label": "Teacher Acknowledgement", "optional": false}]`,
+			RequiredFields:    `[]`,
+			SlaHours:          120,
+			NeedsParentCosign: false,
+		},
+		{
+			SchoolID:          school.ID,
+			Name:              "Circular",
+			Slug:              "circular",
+			WorkflowStages:    `[]`,
+			RequiredFields:    `[]`,
+			SlaHours:          0,
+			NeedsParentCosign: false,
+		},
+	}
+	for i := range docTypes {
+		var existing models.DocumentType
+		if err := gormDB.Where("slug = ?", docTypes[i].Slug).First(&existing).Error; err != nil {
 			docTypes[i].ID = uuid.New()
 			gormDB.Create(&docTypes[i])
+			log.Printf("Seeded missing document type: %s", docTypes[i].Name)
 		}
-		log.Println("Database seeded with Greenwood High School document type configurations.")
 	}
 }

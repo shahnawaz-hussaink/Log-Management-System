@@ -124,6 +124,15 @@ func main() {
 				SlaHours:          96,
 				NeedsParentCosign: false,
 			},
+			{
+				SchoolID:          school.ID,
+				Name:              "Circular",
+				Slug:              "circular",
+				WorkflowStages:    `[]`,
+				RequiredFields:    `[]`,
+				SlaHours:          0,
+				NeedsParentCosign: false,
+			},
 		}
 		for i := range docTypes {
 			docTypes[i].ID = uuid.New()

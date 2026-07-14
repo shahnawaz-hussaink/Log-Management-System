@@ -25,6 +25,9 @@ export class UploadComponent implements OnInit {
   error: string = '';
   loading: boolean = false;
 
+  targetClass: string = 'All';
+  availableClasses: string[] = ['All', '10-A', '10-B', '10-C', '10-D'];
+
   constructor(
     private api: ApiService, 
     private auth: AuthService, 
@@ -40,7 +43,13 @@ export class UploadComponent implements OnInit {
     // Load dynamic document types
     this.api.getDocumentTypes().subscribe({
       next: (res) => {
-        this.documentTypes = res;
+        const currentUser = this.auth.getCurrentUser();
+        if (currentUser && (currentUser.Role === 'Student' || currentUser.Role === 'Parent' || currentUser.role === 'Student' || currentUser.role === 'Parent')) {
+          this.documentTypes = res.filter(dt => dt.Name !== 'Circular' && dt.name !== 'Circular');
+        } else {
+          this.documentTypes = res;
+        }
+
         if (this.documentTypes.length > 0) {
           this.category = this.documentTypes[0].Name;
           
@@ -57,6 +66,16 @@ export class UploadComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load document types:', err)
     });
+
+    const currentUser = this.auth.getCurrentUser();
+    if (currentUser) {
+      const isTeacher = currentUser.Role === 'Teacher' || currentUser.role === 'Teacher';
+      if (isTeacher) {
+        const cSec = currentUser.ClassSection || currentUser.class_section || '10-A';
+        this.availableClasses = [cSec];
+        this.targetClass = cSec;
+      }
+    }
 
     this.api.getUsers().subscribe({
       next: (res) => {
@@ -97,7 +116,12 @@ export class UploadComponent implements OnInit {
     const formData = new FormData();
     formData.append('file', this.selectedFile);
     formData.append('uploader_id', currentUser.ID || currentUser.id);
-    formData.append('target_owner_id', this.targetOwnerId);
+    
+    if (this.category !== 'Circular') {
+      formData.append('target_owner_id', this.targetOwnerId);
+    }
+    formData.append('target_class', this.targetClass);
+
     formData.append('title', this.title);
     formData.append('description', this.description);
     formData.append('category', this.category);

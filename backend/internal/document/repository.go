@@ -71,8 +71,9 @@ func (r *repository) ListByUser(userID uuid.UUID, search string) ([]models.Docum
 		// Principal can see:
 		// 1. Documents they uploaded/own
 		// 2. Documents where they are in history
+		// 3. All Circulars
 		query = query.Where(
-			"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?)",
+			"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?) OR category = 'Circular'",
 			userID, userID, userID,
 		)
 
@@ -81,14 +82,15 @@ func (r *repository) ListByUser(userID uuid.UUID, search string) ([]models.Docum
 		// 1. Documents they uploaded/own
 		// 2. Documents in their class/section uploaded by students
 		// 3. Documents where they are in history
+		// 4. Circulars targeted at their class or All
 		if user.ClassSection != "" {
 			query = query.Where(
-				"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?) OR uploader_id IN (SELECT id FROM users WHERE class_section = ? AND role = 'Student')",
-				userID, userID, userID, user.ClassSection,
+				"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?) OR uploader_id IN (SELECT id FROM users WHERE class_section = ? AND role = 'Student') OR (category = 'Circular' AND (target_class = 'All' OR target_class = ?))",
+				userID, userID, userID, user.ClassSection, user.ClassSection,
 			)
 		} else {
 			query = query.Where(
-				"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?)",
+				"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?) OR (category = 'Circular' AND target_class = 'All')",
 				userID, userID, userID,
 			)
 		}
@@ -97,16 +99,17 @@ func (r *repository) ListByUser(userID uuid.UUID, search string) ([]models.Docum
 		// Parent can see:
 		// 1. Documents uploaded by their children
 		// 2. Documents they own / pending review
+		// 3. Circulars targeted at their children's classes or All
 		query = query.Where(
-			"uploader_id IN (SELECT child_id FROM parent_children WHERE parent_id = ?) OR current_owner_id = ?",
-			userID, userID,
+			"uploader_id IN (SELECT child_id FROM parent_children WHERE parent_id = ?) OR current_owner_id = ? OR (category = 'Circular' AND (target_class = 'All' OR target_class IN (SELECT class_section FROM users WHERE id IN (SELECT child_id FROM parent_children WHERE parent_id = ?))))",
+			userID, userID, userID,
 		)
 
 	default: // Student or other fallback
-		// Student can only see their own submissions
+		// Student can only see their own submissions + relevant Circulars
 		query = query.Where(
-			"uploader_id = ? OR current_owner_id = ?",
-			userID, userID,
+			"uploader_id = ? OR current_owner_id = ? OR (category = 'Circular' AND (target_class = 'All' OR target_class = ?))",
+			userID, userID, user.ClassSection,
 		)
 	}
 

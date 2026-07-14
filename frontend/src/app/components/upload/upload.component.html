@@ -40,10 +40,17 @@
       </select>
     </div>
 
-    <div class="mb-6">
+    <div class="mb-6" *ngIf="category !== 'Circular'">
       <label for="up-target" class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Submit To (Teacher / Principal)</label>
       <select id="up-target" class="app-input cursor-pointer" [(ngModel)]="targetOwnerId">
         <option *ngFor="let user of users" [value]="user.id || user.ID" class="bg-white text-slate-800">{{ user.name || user.Name }} ({{ user.email || user.Email }})</option>
+      </select>
+    </div>
+
+    <div class="mb-6" *ngIf="category === 'Circular'">
+      <label for="up-target-class" class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Target Audience (Class)</label>
+      <select id="up-target-class" class="app-input cursor-pointer" [(ngModel)]="targetClass">
+        <option *ngFor="let cls of availableClasses" [value]="cls" class="bg-white text-slate-800">{{ cls }}</option>
       </select>
     </div>
 
