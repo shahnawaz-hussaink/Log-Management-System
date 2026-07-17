@@ -283,6 +283,6 @@ func (r *repository) GetNoteByID(id uuid.UUID) (*models.Note, error) {
 
 func (r *repository) GetNotesByFileID(fileID uuid.UUID) ([]models.Note, error) {
 	var notes []models.Note
-	err := r.db.Preload("Author").Where("file_id = ? AND is_discarded = false", fileID).Order("created_at asc").Find(&notes).Error
+	err := r.db.Preload("Author").Preload("Author.School").Where("file_id = ? AND is_discarded = false", fileID).Order("created_at asc").Find(&notes).Error
 	return notes, err
 }

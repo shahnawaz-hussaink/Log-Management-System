@@ -50,7 +50,7 @@ type Service interface {
 	GetNotifications(recipientID uuid.UUID) ([]models.Notification, error)
 	GetReports(schoolID uuid.UUID) (interface{}, error)
 	GetMyHistory(userID uuid.UUID) ([]UserHistoryEntry, error)
-	CreateFile(creatorID uuid.UUID, title, description string) (*FileResponse, error)
+	CreateFile(creatorID uuid.UUID, title, description, category, subCategory string) (*FileResponse, error)
 	ListFiles(userID uuid.UUID, search string) ([]FileResponse, error)
 	GetFileDetails(fileID, authenticatedUserID uuid.UUID) (*FileDetailsResponse, error)
 	ForwardFile(fileID, authenticatedUserID uuid.UUID, req ForwardFileRequest) (*FileResponse, error)
@@ -58,6 +58,8 @@ type Service interface {
 	CreateNote(fileID, authenticatedUserID uuid.UUID, req CreateNoteRequest) (*NoteResponse, error)
 	UpdateNote(noteID, authenticatedUserID uuid.UUID, content string) (*NoteResponse, error)
 	PublishNote(noteID, authenticatedUserID uuid.UUID, signature string) (*NoteResponse, error)
+	CloseFile(fileID, authenticatedUserID uuid.UUID) (*FileResponse, error)
+	ArchiveFile(fileID, authenticatedUserID uuid.UUID) (*FileResponse, error)
 }
 
 type service struct {
@@ -1754,6 +1756,8 @@ func (s *service) toFileResponse(f *models.File) *FileResponse {
 		FileNumber:     f.FileNumber,
 		Title:          f.Title,
 		Description:    f.Description,
+		Category:       f.Category,
+		SubCategory:    f.SubCategory,
 		CreatorID:      f.CreatorID,
 		CurrentOwnerID: f.CurrentOwnerID,
 		Status:         f.Status,
@@ -1781,7 +1785,7 @@ func (s *service) toNoteResponse(n *models.Note) *NoteResponse {
 	}
 }
 
-func (s *service) CreateFile(creatorID uuid.UUID, title, description string) (*FileResponse, error) {
+func (s *service) CreateFile(creatorID uuid.UUID, title, description, category, subCategory string) (*FileResponse, error) {
 	var creator models.User
 	if err := s.repo.(*repository).db.First(&creator, "id = ?", creatorID).Error; err != nil {
 		return nil, errors.New("creator user not found")
@@ -1789,7 +1793,20 @@ func (s *service) CreateFile(creatorID uuid.UUID, title, description string) (*F
 
 	var count int64
 	s.repo.(*repository).db.Model(&models.File{}).Count(&count)
-	fileNum := fmt.Sprintf("EDU/2026/%04d", count+1)
+	
+	// Create unique ID based on Category and SubCategory
+	catPrefix := "GEN"
+	if len(category) > 0 {
+		catPrefix = strings.ToUpper(category)[:3]
+	}
+	
+	subCatPrefix := "MSC"
+	if len(subCategory) > 0 {
+		subCatPrefix = strings.ToUpper(subCategory)[:3]
+	}
+	
+	year := time.Now().Year()
+	fileNum := fmt.Sprintf("%s/%s/%d/%04d", catPrefix, subCatPrefix, year, count+1)
 
 	file := &models.File{
 		ID:             uuid.New(),
@@ -1797,6 +1814,8 @@ func (s *service) CreateFile(creatorID uuid.UUID, title, description string) (*F
 		FileNumber:     fileNum,
 		Title:          title,
 		Description:    description,
+		Category:       category,
+		SubCategory:    subCategory,
 		CreatorID:      creatorID,
 		CurrentOwnerID: creatorID,
 		Status:         models.FileStatusOpen,
@@ -2064,4 +2083,46 @@ func (s *service) PublishNote(noteID, authenticatedUserID uuid.UUID, signature s
 	greenNote.Author = author
 
 	return s.toNoteResponse(greenNote), nil
+}
+
+func (s *service) CloseFile(fileID, authenticatedUserID uuid.UUID) (*FileResponse, error) {
+	file, err := s.repo.GetFileByID(fileID)
+	if err != nil {
+		return nil, errors.New("file not found")
+	}
+	
+	if file.CurrentOwnerID != authenticatedUserID {
+		return nil, errors.New("you are not authorized to close this file")
+	}
+	
+	file.Status = models.FileStatusClosed
+	if err := s.repo.SaveFile(file); err != nil {
+		return nil, err
+	}
+	
+	return s.toFileResponse(file), nil
+}
+
+func (s *service) ArchiveFile(fileID, authenticatedUserID uuid.UUID) (*FileResponse, error) {
+	file, err := s.repo.GetFileByID(fileID)
+	if err != nil {
+		return nil, errors.New("file not found")
+	}
+	
+	// We check if the user is authorized. We'll allow the owner or an admin.
+	var actor models.User
+	if err := s.repo.(*repository).db.First(&actor, "id = ?", authenticatedUserID).Error; err != nil {
+		return nil, errors.New("actor not found")
+	}
+	
+	if file.CurrentOwnerID != authenticatedUserID && actor.Role != "SuperAdmin" && actor.Role != "Admin" {
+		return nil, errors.New("you are not authorized to archive this file")
+	}
+	
+	file.Status = models.FileStatusArchived
+	if err := s.repo.SaveFile(file); err != nil {
+		return nil, err
+	}
+	
+	return s.toFileResponse(file), nil
 }

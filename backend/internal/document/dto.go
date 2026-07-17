@@ -94,6 +94,8 @@ type FileResponse struct {
 	FileNumber     string            `json:"FileNumber"`
 	Title          string            `json:"Title"`
 	Description    string            `json:"Description"`
+	Category       string            `json:"Category"`
+	SubCategory    string            `json:"SubCategory"`
 	CreatorID      uuid.UUID         `json:"CreatorID"`
 	CurrentOwnerID uuid.UUID         `json:"CurrentOwnerID"`
 	Status         models.FileStatus `json:"Status"`
@@ -128,6 +130,8 @@ type FileDetailsResponse struct {
 type CreateFileRequest struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	Category    string `json:"category"`
+	SubCategory string `json:"sub_category"`
 }
 
 type CreateNoteRequest struct {
@@ -141,8 +145,6 @@ type PublishNoteRequest struct {
 
 type ForwardFileRequest struct {
 	TargetOwnerID uuid.UUID `json:"target_owner_id"`
-	Remarks       string    `json:"remarks"`
-	Signature     string    `json:"signature"`
 }
 
 type AttachReceiptRequest struct {

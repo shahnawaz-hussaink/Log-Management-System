@@ -35,6 +35,8 @@ func RegisterRoutes(g *echo.Group, handler *Handler, jwtSecret []byte) {
 	r.GET("/files/:id", handler.GetFileDetails)
 	r.POST("/files/:id/forward", handler.ForwardFile)
 	r.POST("/files/:id/attach-receipt", handler.AttachReceipt)
+	r.PUT("/files/:id/close", handler.CloseFile)
+	r.PUT("/files/:id/archive", handler.ArchiveFile)
 
 	// Notes endpoints
 	r.POST("/files/:id/notes", handler.CreateNote)

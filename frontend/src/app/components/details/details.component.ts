@@ -249,6 +249,36 @@ export class DetailsComponent implements OnInit {
       });
   }
 
+  closeFile() {
+    if (!this.file || !this.file.ID) return;
+    if (confirm('Are you sure you want to close this file? It will be locked from further edits.')) {
+      this.api.closeFile(this.file.ID).subscribe({
+        next: (res) => {
+          this.file = res;
+        },
+        error: (err) => {
+          console.error('Failed to close file:', err);
+          alert(err.error?.error || 'Failed to close file.');
+        }
+      });
+    }
+  }
+
+  archiveFile() {
+    if (!this.file || !this.file.ID) return;
+    if (confirm('Are you sure you want to archive this file? This will permanently retire the file.')) {
+      this.api.archiveFile(this.file.ID).subscribe({
+        next: (res) => {
+          this.file = res;
+        },
+        error: (err) => {
+          console.error('Failed to archive file:', err);
+          alert(err.error?.error || 'Failed to archive file.');
+        }
+      });
+    }
+  }
+
   loadSubmissions(id: string) {
     this.api.getSubmissions(id).subscribe({
       next: (res) => {
@@ -580,10 +610,9 @@ export class DetailsComponent implements OnInit {
       return;
     }
     
-    this.api.forwardFile(this.file.ID, this.selectedUser, this.actionRemarks).subscribe({
+    this.api.forwardFile(this.file.ID, this.selectedUser).subscribe({
       next: () => {
         this.showForwardSelect = false;
-        this.actionRemarks = '';
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {

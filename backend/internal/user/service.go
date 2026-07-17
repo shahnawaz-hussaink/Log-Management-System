@@ -65,6 +65,7 @@ func (s *service) GetUsers(actorID uuid.UUID) ([]UserResponse, error) {
 			SchoolID:  u.SchoolID,
 			CreatedAt: u.CreatedAt,
 			UpdatedAt: u.UpdatedAt,
+			School:    u.School,
 		}
 	}
 	return responses, nil

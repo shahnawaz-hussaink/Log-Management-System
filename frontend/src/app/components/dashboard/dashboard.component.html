@@ -58,7 +58,7 @@
         </button>
         <button
           class="app-btn-primary flex items-center gap-2 cursor-pointer border-0 shadow-lg shadow-emerald-900/40 hover:scale-[1.02] active:scale-[0.98] transition-all bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-bold text-xs !py-2.5 px-4"
-          (click)="openCreateFile()"
+          (click)="router.navigate(['/create-file'])"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -106,7 +106,7 @@
       📂 Files (Noting Sheets)
     </button>
     <div class="flex-grow flex justify-end items-center" *ngIf="viewMode === 'files'">
-      <button class="app-btn-primary !py-1.5 px-3 flex items-center gap-1.5 cursor-pointer border-0 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md" (click)="openCreateFile()">
+      <button class="app-btn-primary !py-1.5 px-3 flex items-center gap-1.5 cursor-pointer border-0 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-md" (click)="router.navigate(['/create-file'])">
         ＋ Create File Container
       </button>
     </div>
@@ -621,28 +621,5 @@
     </div>
   </div>
 
-  <!-- Create File Modal -->
-  <div class="modal-overlay" *ngIf="showCreateFileModal" (click)="showCreateFileModal=false">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <span class="modal-title">Create File Container</span>
-        <button class="modal-close" (click)="showCreateFileModal=false">✕</button>
-      </div>
-      <div class="modal-body">
-        <div *ngIf="createFileError" class="alert alert-error">{{createFileError}}</div>
-        <div class="form-group">
-          <label for="file-title">File Title *</label>
-          <input id="file-title" name="title" type="text" [(ngModel)]="newFileForm.title" placeholder="e.g. Greenwood Annual Report Submission">
-        </div>
-        <div class="form-group">
-          <label for="file-description">Description</label>
-          <textarea id="file-description" name="description" rows="3" [(ngModel)]="newFileForm.description" placeholder="Add descriptive details or notes..."></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-secondary" (click)="showCreateFileModal=false">Cancel</button>
-        <button class="btn-primary" (click)="createFile()">Create File</button>
-      </div>
-    </div>
-  </div>
+
 </div>

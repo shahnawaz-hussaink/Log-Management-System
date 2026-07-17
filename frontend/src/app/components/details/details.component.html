@@ -688,12 +688,7 @@
                 >
                   {{ note.Type }} Note {{ note.IsDiscarded ? '(Discarded Draft)' : '' }}
                 </span>
-                <span class="text-xs text-[var(--text-secondary)] font-semibold">
-                  {{ note.Author?.Name }}
-                </span>
-                <span class="text-[10px] text-[var(--text-muted)]">
-                  ({{ note.Author?.Role }})
-                </span>
+
               </div>
               <span class="text-[10px] text-[var(--text-muted)]">
                 {{ note.CreatedAt | date: 'short' }}
@@ -719,13 +714,25 @@
             </div>
 
             <!-- Digital Seal/Token for Green Notes -->
-            <div *ngIf="note.Type === 'Green' && note.Signature" class="mt-3 border-t border-emerald-100 dark:border-emerald-950/40 pt-2.5 flex flex-col gap-1">
-              <span class="block text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                Digital Token Stamp (Non-Repudiation):
-              </span>
-              <span class="inline-block self-start px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-250 font-mono rounded text-[10px] font-bold shadow-3xs">
-                🔒 {{ note.Signature }}
-              </span>
+            <div *ngIf="note.Type === 'Green'" class="mt-3 border-t border-emerald-100 dark:border-emerald-950/40 pt-2.5 flex flex-col gap-2">
+              <div class="flex flex-col gap-0.5">
+                <span class="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                  {{ note.Author?.Name || note.Author?.name || 'Unknown User' }}
+                </span>
+                <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                  {{ note.Author?.Role || note.Author?.role || 'Unknown Designation' }}
+                  &nbsp;•&nbsp;
+                  {{ note.Author?.School?.Name || note.Author?.SchoolName || 'DHE' }}
+                </span>
+              </div>
+              <div *ngIf="note.Signature">
+                <span class="block text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
+                  Digital Token Stamp (Non-Repudiation):
+                </span>
+                <span class="inline-block self-start px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-250 font-mono rounded text-[10px] font-bold shadow-3xs">
+                  🔒 {{ note.Signature }}
+                </span>
+              </div>
             </div>
 
             <!-- Discarded audit trace indicator -->
@@ -797,6 +804,21 @@
           >
             Forward File ad-hoc
           </button>
+          
+          <div class="flex gap-2 ml-auto">
+            <button
+              class="app-btn-secondary !py-2 !px-4 text-xs font-bold border border-slate-300 bg-slate-600 text-white hover:bg-slate-700 rounded cursor-pointer"
+              (click)="closeFile()"
+            >
+              Close File
+            </button>
+            <button
+              class="app-btn-secondary !py-2 !px-4 text-xs font-bold border border-rose-300 bg-rose-600 text-white hover:bg-rose-700 rounded cursor-pointer"
+              (click)="archiveFile()"
+            >
+              Archive File
+            </button>
+          </div>
         </div>
 
         <!-- Forward Destination Selector -->
@@ -809,10 +831,7 @@
               </option>
             </select>
           </div>
-          <div class="form-group">
-            <label for="fwd-remarks" class="block text-xs font-semibold text-[var(--text-secondary)] uppercase mb-1">Remarks / Movement Comments</label>
-            <textarea id="fwd-remarks" class="w-full p-2 border border-[var(--border)] rounded-md text-sm" rows="2" [(ngModel)]="actionRemarks" placeholder="Add optional movement remarks..."></textarea>
-          </div>
+
           <div class="flex justify-end gap-2">
             <button class="btn-secondary !py-1 !px-3 text-xs" (click)="showForwardSelect=false">Cancel</button>
             <button class="btn-primary !py-1 !px-3 text-xs" (click)="submitFileForward()">Forward File</button>

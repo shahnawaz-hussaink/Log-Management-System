@@ -111,8 +111,8 @@ export class ApiService {
     });
   }
 
-  createFile(title: string, description: string) {
-    return this.http.post<any>(`${this.apiUrl}/files`, { title, description });
+  createFile(title: string, description: string, category: string, subCategory: string) {
+    return this.http.post<any>(`${this.apiUrl}/files`, { title, description, category, sub_category: subCategory });
   }
 
   listFiles(search?: string) {
@@ -127,11 +127,9 @@ export class ApiService {
     return this.http.get<any>(`${this.apiUrl}/files/${id}`);
   }
 
-  forwardFile(id: string, targetOwnerId: string, remarks: string, signature?: string) {
+  forwardFile(id: string, targetOwnerId: string) {
     return this.http.post<any>(`${this.apiUrl}/files/${id}/forward`, {
-      target_owner_id: targetOwnerId,
-      remarks,
-      signature
+      target_owner_id: targetOwnerId
     });
   }
 
@@ -139,6 +137,14 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/files/${id}/attach-receipt`, {
       receipt_id: receiptId
     });
+  }
+
+  closeFile(id: string) {
+    return this.http.put<any>(`${this.apiUrl}/files/${id}/close`, {});
+  }
+
+  archiveFile(id: string) {
+    return this.http.put<any>(`${this.apiUrl}/files/${id}/archive`, {});
   }
 
   createNote(fileId: string, content: string, type: 'Green' | 'Yellow') {

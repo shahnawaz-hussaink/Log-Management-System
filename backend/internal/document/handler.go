@@ -441,9 +441,9 @@ func (h *Handler) CreateFile(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 	}
 
-	res, err := h.service.CreateFile(userID, req.Title, req.Description)
+	res, err := h.service.CreateFile(userID, req.Title, req.Description, req.Category, req.SubCategory)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	return c.JSON(http.StatusCreated, res)
 }
@@ -584,6 +584,40 @@ func (h *Handler) PublishNote(c echo.Context) error {
 	}
 
 	res, err := h.service.PublishNote(noteID, userID, req.Signature)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *Handler) CloseFile(c echo.Context) error {
+	authenticatedUserIDStr := c.Get("user_id").(string)
+	userID, _ := uuid.Parse(authenticatedUserIDStr)
+
+	idStr := c.Param("id")
+	fileID, err := uuid.Parse(idStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid file ID"})
+	}
+
+	res, err := h.service.CloseFile(fileID, userID)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, res)
+}
+
+func (h *Handler) ArchiveFile(c echo.Context) error {
+	authenticatedUserIDStr := c.Get("user_id").(string)
+	userID, _ := uuid.Parse(authenticatedUserIDStr)
+
+	idStr := c.Param("id")
+	fileID, err := uuid.Parse(idStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid file ID"})
+	}
+
+	res, err := h.service.ArchiveFile(fileID, userID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}

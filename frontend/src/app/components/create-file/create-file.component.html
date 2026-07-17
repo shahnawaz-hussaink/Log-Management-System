@@ -1,0 +1,55 @@
+<div class="mt-4 max-w-[600px] mx-auto px-4">
+  <div class="app-card">
+    <h2 class="text-2xl font-bold text-[var(--text-primary)] mb-6">
+      Create File Container
+    </h2>
+
+    <div class="mb-5">
+      <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+        Category
+      </label>
+      <select class="app-input" [(ngModel)]="category" (change)="onCategoryChange()">
+        <option value="" disabled selected>Select a Category</option>
+        <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+      </select>
+    </div>
+
+    <div class="mb-5">
+      <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+        Sub-Category
+      </label>
+      <select class="app-input" [(ngModel)]="subCategory" [disabled]="!category">
+        <option value="" disabled selected>Select a Sub-Category</option>
+        <option *ngFor="let sub of availableSubCategories" [value]="sub">{{ sub }}</option>
+      </select>
+    </div>
+
+    <div class="mb-5">
+      <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+        File Title
+      </label>
+      <input type="text" class="app-input" [(ngModel)]="title" placeholder="e.g. Annual Budget FY27" />
+    </div>
+
+    <div class="mb-5">
+      <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2">
+        Description
+      </label>
+      <textarea class="app-input" rows="4" [(ngModel)]="description" placeholder="Briefly describe the purpose of this file..."></textarea>
+    </div>
+
+    <div *ngIf="error" class="text-rose-600 mb-5 text-sm p-3 bg-rose-50 border border-rose-100 rounded-xl">
+      {{ error }}
+    </div>
+
+    <div class="flex gap-4 mt-6">
+      <button class="app-btn-primary cursor-pointer flex-1 sm:flex-initial bg-amber-600 hover:bg-amber-700 shadow-amber-900/40" [disabled]="loading" (click)="createFile()">
+        <span *ngIf="!loading">Create File</span>
+        <span *ngIf="loading">Creating...</span>
+      </button>
+      <button class="app-btn-secondary cursor-pointer flex-1 sm:flex-initial" [disabled]="loading" (click)="cancel()">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>

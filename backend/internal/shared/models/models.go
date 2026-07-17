@@ -237,6 +237,8 @@ type File struct {
 	FileNumber     string     `gorm:"size:100;uniqueIndex"` // e.g. EDU/2026/0001
 	Title          string     `gorm:"size:255;not null"`
 	Description    string     `gorm:"type:text"`
+	Category       string     `gorm:"size:100;not null;default:'General'"`
+	SubCategory    string     `gorm:"size:100;not null;default:'Misc'"`
 	CreatorID      uuid.UUID  `gorm:"type:uuid;not null"`
 	CurrentOwnerID uuid.UUID  `gorm:"type:uuid;not null"` // Who currently acts on the file
 	Status         FileStatus `gorm:"size:50;not null;default:'Open'"`

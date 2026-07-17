@@ -290,15 +290,15 @@
             User Workspace
           </div>
 
-          <!-- Submit Document -->
+          <!-- Upload Receipt -->
           <button
             class="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold rounded-lg transition-all border-0 cursor-pointer text-left bg-transparent"
-            [class.bg-[var(--primary-light)]]="router.url === '/upload'"
-            [class.text-[var(--primary-active)]]="router.url === '/upload'"
-            [class.text-[var(--text-secondary)]]="router.url !== '/upload'"
-            [class.hover:bg-[var(--background)]]="router.url !== '/upload'"
-            (click)="router.navigate(['/upload'])"
-            [title]="isSidebarCollapsed ? 'Submit Document' : ''"
+            [class.bg-[var(--primary-light)]]="router.url === '/receipt'"
+            [class.text-[var(--primary-active)]]="router.url === '/receipt'"
+            [class.text-[var(--text-secondary)]]="router.url !== '/receipt'"
+            [class.hover:bg-[var(--background)]]="router.url !== '/receipt'"
+            (click)="router.navigate(['/receipt'])"
+            [title]="isSidebarCollapsed ? 'Upload Receipt' : ''"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -316,7 +316,37 @@
               <path d="M8 12h8" />
               <path d="M12 8v8" />
             </svg>
-            <span *ngIf="!isSidebarCollapsed">Submit Document</span>
+            <span *ngIf="!isSidebarCollapsed">Upload Receipt</span>
+          </button>
+
+          <!-- Create File Container -->
+          <button
+            class="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold rounded-lg transition-all border-0 cursor-pointer text-left bg-transparent mt-1"
+            [class.bg-[var(--primary-light)]]="router.url === '/create-file'"
+            [class.text-[var(--primary-active)]]="router.url === '/create-file'"
+            [class.text-[var(--text-secondary)]]="router.url !== '/create-file'"
+            [class.hover:bg-[var(--background)]]="router.url !== '/create-file'"
+            (click)="router.navigate(['/create-file'])"
+            [title]="isSidebarCollapsed ? 'Create File' : ''"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="w-4.5 h-4.5 flex-shrink-0 text-amber-500"
+            >
+              <path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4" />
+              <polyline points="14 2 14 8 20 8" />
+              <path d="M3 15h6" />
+              <path d="M6 12v6" />
+            </svg>
+            <span *ngIf="!isSidebarCollapsed">Create File</span>
           </button>
 
           <!-- Audit History Page -->

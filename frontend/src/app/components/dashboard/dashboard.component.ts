@@ -36,7 +36,7 @@ export class DashboardComponent implements OnInit {
   constructor(
     private api: ApiService, 
     private auth: AuthService, 
-    private router: Router,
+    public router: Router,
     private route: ActivatedRoute
   ) {}
 
@@ -145,30 +145,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  openCreateFile() {
-    this.newFileForm = { title: '', description: '' };
-    this.createFileError = '';
-    this.showCreateFileModal = true;
-  }
 
-  createFile() {
-    this.createFileError = '';
-    const titleTrimmed = (this.newFileForm.title || '').trim();
-    if (!titleTrimmed) {
-      this.createFileError = 'File Title is required.';
-      return;
-    }
-
-    this.api.createFile(titleTrimmed, this.newFileForm.description).subscribe({
-      next: () => {
-        this.showCreateFileModal = false;
-        this.loadFiles();
-      },
-      error: (err) => {
-        this.createFileError = err.error?.error || 'Failed to create file.';
-      }
-    });
-  }
 
   onSearchChange() {
     if (this.viewMode === 'receipts') {
