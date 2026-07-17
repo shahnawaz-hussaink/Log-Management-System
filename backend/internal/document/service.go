@@ -64,20 +64,6 @@ func NewService(repo Repository, uploadsDir string) Service {
 	return &service{repo: repo, uploadsDir: uploadsDir}
 }
 func (s *service) saveFile(fileHeader *multipart.FileHeader, prefix string) (string, error) {
-	originalFilename := filepath.Base(fileHeader.Filename)
-	ext := strings.ToLower(filepath.Ext(originalFilename))
-	if ext != ".pdf" && ext != ".docx" && ext != ".doc" {
-		return "", fmt.Errorf("invalid file type: only PDF (.pdf) and Word documents (.docx/.doc) are allowed")
-	}
-
-	if fileHeader.Size > 10*1024*1024 {
-		return "", fmt.Errorf("file size exceeds the maximum limit of 10 MB")
-	}
-
-	if strings.Contains(fileHeader.Filename, "..") || strings.Contains(fileHeader.Filename, "/") || strings.Contains(fileHeader.Filename, "\\") {
-		return "", fmt.Errorf("invalid file name structure")
-	}
-
 	src, err := fileHeader.Open()
 	if err != nil {
 		return "", err
@@ -85,6 +71,7 @@ func (s *service) saveFile(fileHeader *multipart.FileHeader, prefix string) (str
 	defer src.Close()
 
 	uniquePrefix := fmt.Sprintf("%d_%s", time.Now().UnixNano(), prefix)
+	originalFilename := filepath.Base(fileHeader.Filename)
 	safeFilename := uniquePrefix + originalFilename
 	destPath := filepath.Join(s.uploadsDir, safeFilename)
 

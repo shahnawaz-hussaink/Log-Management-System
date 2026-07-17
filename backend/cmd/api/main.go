@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -34,14 +33,8 @@ func main() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	corsAllowedOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
-	allowedOrigins := []string{"*"}
-	if corsAllowedOrigins != "" {
-		allowedOrigins = strings.Split(corsAllowedOrigins, ",")
-	}
-
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: allowedOrigins,
+		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 	}))
 
@@ -65,28 +58,7 @@ func main() {
 		},
 	})
 
-	// General rate limiter for non-auth api endpoints to prevent API scraping/DoS
-	generalRateLimiter := middleware.RateLimiterWithConfig(middleware.RateLimiterConfig{
-		Skipper: func(c echo.Context) bool {
-			return strings.HasPrefix(c.Request().URL.Path, "/api/auth/")
-		},
-		Store: middleware.NewRateLimiterMemoryStoreWithConfig(
-			middleware.RateLimiterMemoryStoreConfig{
-				Rate:      rate.Limit(100.0 / 60.0), // 100 requests per minute
-				Burst:     30,
-				ExpiresIn: 1 * time.Minute,
-			},
-		),
-		IdentifierExtractor: func(ctx echo.Context) (string, error) {
-			return ctx.RealIP(), nil
-		},
-		ErrorHandler: func(context echo.Context, err error) error {
-			return context.JSON(http.StatusTooManyRequests, map[string]string{"error": "Rate limit exceeded. Please try again in a minute."})
-		},
-	})
-
 	e.Use(authRateLimiter)
-	e.Use(generalRateLimiter)
 
 	api := e.Group("/api")
 

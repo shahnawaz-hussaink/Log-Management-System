@@ -1,44 +1,115 @@
 <div class="mt-4 max-w-[600px] mx-auto px-4">
   <div class="app-card">
-    <h2 class="text-2xl font-bold text-[var(--text-primary)] mb-6">Submit Document</h2>
-    
-    <div class="mb-4">
-      <label for="up-file" class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Select File (PDF, DOCX, DOC)</label>
-      <input id="up-file" type="file" class="app-input file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-[var(--primary)] hover:file:bg-blue-100/50 file:cursor-pointer p-1.5" (change)="onFileSelected($event)" accept=".pdf,.docx,.doc">
-      <p class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-1.5 flex items-center gap-1.5">
-        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+    <h2 class="text-2xl font-bold text-[var(--text-primary)] mb-6">
+      Submit Document
+    </h2>
+
+    <div class="mb-5">
+      <label
+        for="up-file"
+        class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+        >Select File (PDF, DOCX, DOC)</label
+      >
+      <input
+        id="up-file"
+        type="file"
+        class="app-input file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-[var(--primary)] hover:file:bg-blue-100/50 file:cursor-pointer"
+        (change)="onFileSelected($event)"
+        accept=".pdf,.docx,.doc"
+      />
+      <p
+        class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-1.5 flex items-center gap-1.5"
+      >
+        <svg
+          class="h-3.5 w-3.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          />
         </svg>
-        Word documents (.docx/.doc) will be auto-converted to PDF. Verify formatting before submitting.
+        Word documents (.docx/.doc) will be auto-converted to PDF. Verify
+        formatting before submitting.
       </p>
     </div>
 
-    <div class="mb-4">
-      <label for="up-title" class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Document Title</label>
-      <input id="up-title" type="text" class="app-input" [(ngModel)]="title" placeholder="e.g. Broken AC in Room 302">
+    <div class="mb-5">
+      <label
+        for="up-title"
+        class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+        >Document Title</label
+      >
+      <input
+        id="up-title"
+        type="text"
+        class="app-input"
+        [(ngModel)]="title"
+        placeholder="e.g. Broken AC in Room 302"
+      />
     </div>
 
-    <div class="mb-4">
-      <label for="up-desc" class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Description / Purpose</label>
-      <textarea id="up-desc" class="app-input min-h-[100px] resize-y" [(ngModel)]="description" placeholder="Describe the purpose of this document (e.g. Maintenance request for faulty wiring)..."></textarea>
+    <div class="mb-5">
+      <label
+        for="up-desc"
+        class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+        >Description / Purpose</label
+      >
+      <textarea
+        id="up-desc"
+        class="app-input min-h-[100px] resize-y"
+        [(ngModel)]="description"
+        placeholder="Describe the purpose of this document (e.g. Maintenance request for faulty wiring)..."
+      ></textarea>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 mb-4">
+    <div class="grid grid-cols-2 gap-4 mb-5">
       <div>
-        <label for="up-category" class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Category</label>
-        <select id="up-category" class="app-input cursor-pointer" [(ngModel)]="category">
-          <option *ngFor="let dt of documentTypes" [value]="dt.Name" class="bg-white text-slate-800">{{ dt.Name }}</option>
+        <label
+          for="up-category"
+          class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+          >Category</label
+        >
+        <select
+          id="up-category"
+          class="app-input cursor-pointer"
+          [(ngModel)]="category"
+        >
+          <option
+            *ngFor="let dt of documentTypes"
+            [value]="dt.Name"
+            class="bg-white text-slate-800"
+          >
+            {{ dt.Name }}
+          </option>
         </select>
       </div>
 
       <div>
-        <label for="up-tags" class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Tags (comma separated)</label>
-        <input id="up-tags" type="text" class="app-input" [(ngModel)]="tags" placeholder="e.g. urgent, class-10, term-2">
+        <label
+          for="up-tags"
+          class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+          >Tags (comma separated)</label
+        >
+        <input
+          id="up-tags"
+          type="text"
+          class="app-input"
+          [(ngModel)]="tags"
+          placeholder="e.g. urgent, class-10, term-2"
+        />
       </div>
     </div>
 
-    <div class="mb-4">
-      <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Priority</label>
+    <div class="mb-5">
+      <label
+        class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+        >Priority</label
+      >
       <select class="app-input cursor-pointer" [(ngModel)]="priority">
         <option value="Normal">Normal</option>
         <option value="Urgent">Urgent</option>
@@ -75,14 +146,30 @@
       <p class="text-xs text-slate-500 mt-1">Hold Ctrl/Cmd to select multiple classes.</p>
     </div>
 
-    <div *ngIf="error" class="text-rose-600 mb-5 text-sm p-3 bg-rose-50 border border-rose-100 rounded-xl">{{ error }}</div>
+
+    <div
+      *ngIf="error"
+      class="text-rose-600 mb-5 text-sm p-3 bg-rose-50 border border-rose-100 rounded-xl"
+    >
+      {{ error }}
+    </div>
 
     <div class="flex gap-4 mt-6">
-      <button class="app-btn-primary cursor-pointer flex-1 sm:flex-initial" [disabled]="loading" (click)="upload()">
+      <button
+        class="app-btn-primary cursor-pointer flex-1 sm:flex-initial"
+        [disabled]="loading"
+        (click)="upload()"
+      >
         <span *ngIf="!loading">Upload & Submit</span>
         <span *ngIf="loading">Uploading...</span>
       </button>
-      <button class="app-btn-secondary cursor-pointer flex-1 sm:flex-initial" [disabled]="loading" (click)="cancel()">Cancel</button>
+      <button
+        class="app-btn-secondary cursor-pointer flex-1 sm:flex-initial"
+        [disabled]="loading"
+        (click)="cancel()"
+      >
+        Cancel
+      </button>
     </div>
   </div>
 </div>

@@ -4,61 +4,85 @@
 @source "./app/**/*.ts";
 
 :root {
-  /* Color Palette (Authoritative Slate-Blue eGov Theme) */
-  --primary: #1e3a8a;       /* Navy Blue */
-  --primary-hover: #172554;
-  --primary-light: rgba(30, 58, 138, 0.05);
-  --primary-active: #1e3a8a;
-  --secondary: #334155;     /* Slate */
-  --accent: #15803d;        /* Deep Green */
-  --accent-hover: #166534;
-  --accent-light: #f0fdf4;
-  --warning: #b45309;       /* Dark Amber */
+  /* Color Palette (Deep Academic Theme) */
+  --primary: #1d4ed8; /* Blue */
+  --primary-hover: #1e40af;
+  --primary-light: rgba(29, 78, 216, 0.08);
+  --primary-active: #1d4ed8;
+  --secondary: #0f172a; /* Slate Dark */
+  --accent: #10b981; /* Emerald */
+  --accent-hover: #059669;
+  --accent-light: #d1fae5;
+  --warning: #f59e0b; /* Amber */
   --warning-light: #fef3c7;
-  --danger: #b91c1c;        /* Deep Red */
-  --danger-light: #fef2f2;
-  
-  /* Neutral scale */
-  --background: #f1f5f9;
-  --surface: #ffffff;
-  --border: #cbd5e1;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;     /* High contrast */
+  --danger: #ef4444; /* Rose */
+  --danger-light: #fee2e2;
 
-  /* Component styling tokens (Professional Enterprise Scale) */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.04), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  /* Neutral scale */
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  /* Component styling tokens */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md:
+    0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.08);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.04), 0 4px 6px -4px rgb(0 0 0 / 0.04);
 }
 
 .dark {
   --primary: #3b82f6;
-  --primary-hover: #1d4ed8;
-  --primary-light: rgba(59, 130, 246, 0.12);
+  --primary-hover: #2563eb;
+  --primary-light: rgba(59, 130, 246, 0.15);
   --primary-active: #60a5fa;
-  --background: #0b0f19;
-  --surface: #1e293b;
-  --border: #334155;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;     /* High contrast */
+  --background: #090d16;
+  --surface: #111827;
+  --border: #1f2937;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #6b7280;
 }
 
 body {
   background-color: var(--background);
   color: var(--text-primary);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  font-family:
+    "Outfit",
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
 
-aside, header, main, .app-card, table, tr, td, th, input, select, textarea, button {
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+aside,
+header,
+main,
+.app-card,
+table,
+tr,
+td,
+th,
+input,
+select,
+textarea,
+button {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 /* Custom premium component classes that can be used consistently */
@@ -67,12 +91,14 @@ aside, header, main, .app-card, table, tr, td, th, input, select, textarea, butt
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  padding: 1.25rem;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  padding: 1.5rem;
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 .app-card:hover {
   box-shadow: var(--shadow-md);
-  border-color: var(--border);
+  border-color: #cbd5e1;
 }
 
 .app-btn-primary {
@@ -80,21 +106,17 @@ aside, header, main, .app-card, table, tr, td, th, input, select, textarea, butt
   color: #ffffff;
   font-weight: 600;
   border-radius: var(--radius-md);
-  padding: 0.5rem 1rem;
-  font-size: 0.75rem;
-  transition: all 0.15s ease;
-  border: 1px solid transparent;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px 0 rgba(79, 70, 229, 0.15);
 }
-.app-btn-primary:hover:not([disabled]) {
+.app-btn-primary:hover {
   background-color: var(--primary-hover);
-  transform: translateY(-0.5px);
+  box-shadow: 0 4px 6px 0 rgba(79, 70, 229, 0.25);
+  transform: translateY(-1px);
 }
-.app-btn-primary:active:not([disabled]) {
+.app-btn-primary:active {
   transform: translateY(0);
-}
-.app-btn-primary[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 .app-btn-secondary {
@@ -103,9 +125,8 @@ aside, header, main, .app-card, table, tr, td, th, input, select, textarea, butt
   border: 1px solid var(--border);
   font-weight: 555;
   border-radius: var(--radius-md);
-  padding: 0.5rem 1rem;
-  font-size: 0.75rem;
-  transition: all 0.15s ease;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.2s ease;
 }
 .app-btn-secondary:hover {
   background-color: var(--background);
@@ -115,17 +136,16 @@ aside, header, main, .app-card, table, tr, td, th, input, select, textarea, butt
 
 .app-input {
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.75rem;
+  padding: 0.75rem 1rem;
   background-color: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
 }
 .app-input:focus {
   outline: none;
   background-color: var(--surface);
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.1);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
 }

@@ -11,19 +11,20 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './details.component.html',
-  styleUrls: ['./details.component.css']
+  styleUrls: ['./details.component.css'],
 })
 export class DetailsComponent implements OnInit {
   document: any = null;
   history: any[] = [];
   currentUser: any = null;
-  
+
   actionRemarks: string = '';
   selectedUser: string = '';
   users: any[] = [];
   documentTypes: any[] = [];
   submissions: any[] = [];
   
+
   selectedFile: File | null = null;
   replaceError: string = '';
   replaceRemarks: string = '';
@@ -46,7 +47,7 @@ export class DetailsComponent implements OnInit {
     private api: ApiService,
     private auth: AuthService,
     public router: Router,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
   ) {}
 
   toggleForwardSelect() {
@@ -63,22 +64,27 @@ export class DetailsComponent implements OnInit {
     this.api.getUsers().subscribe({
       next: (res) => {
         const currentId = this.currentUser?.ID || this.currentUser?.id;
-        this.users = res.filter(u => (u.id || u.ID) !== currentId && u.Role !== 'Student' && u.role !== 'Student');
+        this.users = res.filter(
+          (u) =>
+            (u.id || u.ID) !== currentId &&
+            u.Role !== 'Student' &&
+            u.role !== 'Student',
+        );
         if (this.users.length > 0) {
           this.selectedUser = this.users[0].id || this.users[0].ID;
         }
       },
-      error: (err) => console.error('Failed to load users:', err)
+      error: (err) => console.error('Failed to load users:', err),
     });
 
     this.api.getDocumentTypes().subscribe({
       next: (types) => {
         this.documentTypes = types || [];
       },
-      error: (err) => console.error('Failed to load document types:', err)
+      error: (err) => console.error('Failed to load document types:', err),
     });
 
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
         this.loadDetails(id);
@@ -99,42 +105,35 @@ export class DetailsComponent implements OnInit {
         }
 
         if (this.document.FilePath) {
-          this.api.previewDocumentFile(this.document.ID).subscribe({
-          next: (blob: Blob) => {
-            const objectUrl = URL.createObjectURL(blob);
-            this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
-          },
-          error: (err: any) => {
-            console.error('Failed to load PDF preview:', err);
+          const token = this.auth.getToken();
+          let url = '';
+          if (this.isPdf(this.document.Filename)) {
+            url = `http://localhost:8080/api/documents/${this.document.ID}/download?token=${token}&cb=${this.pdfCacheBuster}`;
+          } else if (
+            this.isDocx(this.document.Filename) ||
+            this.isDoc(this.document.Filename)
+          ) {
+            url = `http://localhost:8080/api/documents/${this.document.ID}/preview-pdf?token=${token}&cb=${this.pdfCacheBuster}`;
           }
-        });
+          this.safePdfUrl = url
+            ? this.sanitizer.bypassSecurityTrustResourceUrl(url)
+            : null;
         }
         this.loading = false;
       },
       error: (err: any) => {
         console.error('Failed to load document details:', err);
         this.loading = false;
-      }
+      },
     });
   }
 
   download() {
-    this.api.downloadDocumentFile(this.document.ID).subscribe({
-      next: (blob: Blob) => {
-        const objectUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = objectUrl;
-        a.download = this.document.Filename || 'document';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(objectUrl);
-      },
-      error: (err) => {
-        console.error('Download failed:', err);
-        alert('Failed to download document.');
-      }
-    });
+    const token = this.auth.getToken();
+    window.open(
+      `http://localhost:8080/api/documents/${this.document.ID}/download?token=${token}`,
+      '_blank',
+    );
   }
 
   submitResponse() {
@@ -181,8 +180,13 @@ export class DetailsComponent implements OnInit {
   }
 
   executeSubmitAction(action: string, signature: string) {
-    if ((action === 'Sent Back' || action === 'Rejected') && !this.actionRemarks.trim()) {
-      alert(`Please enter your Remarks / Noting Sheet comments for this ${action.toLowerCase()} action.`);
+    if (
+      (action === 'Sent Back' || action === 'Rejected') &&
+      !this.actionRemarks.trim()
+    ) {
+      alert(
+        `Please enter your Remarks / Noting Sheet comments for this ${action.toLowerCase()} action.`,
+      );
       return;
     }
 
@@ -199,23 +203,28 @@ export class DetailsComponent implements OnInit {
       target = this.selectedUser;
     }
 
-    this.api.submitAction(this.document.ID, {
-      actor_id: this.currentUser.ID,
-      target_id: target,
-      action: action,
-      remarks: this.actionRemarks,
-      signature: signature
-    }).subscribe({
-      next: () => {
-        this.loadDetails(this.document.ID);
-        this.actionRemarks = '';
-        this.showForwardSelect = false;
-      },
-      error: (err) => {
-        console.error('Failed to submit action:', err);
-        alert(err.error?.message || 'Failed to submit action. Please make sure all required fields are filled.');
-      }
-    });
+    this.api
+      .submitAction(this.document.ID, {
+        actor_id: this.currentUser.ID,
+        target_id: target,
+        action: action,
+        remarks: this.actionRemarks,
+        signature: signature,
+      })
+      .subscribe({
+        next: () => {
+          this.loadDetails(this.document.ID);
+          this.actionRemarks = '';
+          this.showForwardSelect = false;
+        },
+        error: (err) => {
+          console.error('Failed to submit action:', err);
+          alert(
+            err.error?.message ||
+              'Failed to submit action. Please make sure all required fields are filled.',
+          );
+        },
+      });
   }
 
   loadSubmissions(id: string) {
@@ -272,9 +281,11 @@ export class DetailsComponent implements OnInit {
         this.selectedFile = null;
         this.replaceRemarks = '';
         this.replaceError = '';
-        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        const fileInput = document.querySelector(
+          'input[type="file"]',
+        ) as HTMLInputElement;
         if (fileInput) fileInput.value = '';
-        
+
         // Navigate to the newly generated document version
         if (res && (res.ID || res.id)) {
           this.router.navigate(['/details', res.ID || res.id]);
@@ -284,7 +295,7 @@ export class DetailsComponent implements OnInit {
       },
       error: (err) => {
         this.replaceError = err.error?.error || 'Failed to resubmit document.';
-      }
+      },
     });
   }
 
@@ -301,7 +312,7 @@ export class DetailsComponent implements OnInit {
       },
       error: (err) => {
         this.noteError = 'Failed to append note to the noting sheet.';
-      }
+      },
     });
   }
 
@@ -314,7 +325,7 @@ export class DetailsComponent implements OnInit {
       },
       error: (err) => {
         this.draftError = 'Failed to save draft.';
-      }
+      },
     });
   }
 
@@ -327,32 +338,37 @@ export class DetailsComponent implements OnInit {
       this.attachmentError = 'Please select a file to enclose.';
       return;
     }
-    this.api.addAttachment(this.document.ID, this.selectedAttachmentFile).subscribe({
-      next: () => {
-        this.selectedAttachmentFile = null;
-        this.attachmentError = '';
-        const fileInput = document.getElementById('att-file-input') as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
-        this.loadDetails(this.document.ID);
-      },
-      error: (err) => {
-        this.attachmentError = err.error?.error || 'Failed to upload attachment.';
-      }
-    });
+    this.api
+      .addAttachment(this.document.ID, this.selectedAttachmentFile)
+      .subscribe({
+        next: () => {
+          this.selectedAttachmentFile = null;
+          this.attachmentError = '';
+          const fileInput = document.getElementById(
+            'att-file-input',
+          ) as HTMLInputElement;
+          if (fileInput) fileInput.value = '';
+          this.loadDetails(this.document.ID);
+        },
+        error: (err) => {
+          this.attachmentError =
+            err.error?.error || 'Failed to upload attachment.';
+        },
+      });
   }
-
-
 
   submitReferral(action: string) {
     if (action === 'Refer' && !this.referralUser) {
       alert('Please select a user to refer this document to.');
       return;
     }
-    const remarks = prompt(`Enter optional remarks for this ${action.toLowerCase()} action:`);
+    const remarks = prompt(
+      `Enter optional remarks for this ${action.toLowerCase()} action:`,
+    );
     const actionData = {
       action: action,
       target_id: action === 'Refer' ? this.referralUser : null,
-      remarks: remarks || `${action} action completed.`
+      remarks: remarks || `${action} action completed.`,
     };
     this.api.submitAction(this.document.ID, actionData).subscribe({
       next: () => {
@@ -360,39 +376,31 @@ export class DetailsComponent implements OnInit {
       },
       error: (err) => {
         alert(`Failed to complete ${action.toLowerCase()} action.`);
-      }
+      },
     });
   }
 
-  downloadAttachment(att: any) {
+  getDownloadAttachmentUrl(att: any): string {
+    const token = this.auth.getToken();
     const id = att.id || att.ID;
-    this.api.downloadAttachmentFile(id).subscribe({
-      next: (blob: Blob) => {
-        const objectUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = objectUrl;
-        a.download = att.Filename || 'attachment';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(objectUrl);
-      },
-      error: (err) => {
-        console.error('Attachment download failed:', err);
-        alert('Failed to download attachment.');
-      }
-    });
+    return `http://localhost:8080/api/attachments/${id}/download?token=${token}&cb=${Date.now()}`;
   }
 
   recallDocument() {
-    if (confirm('Are you sure you want to recall this document back to your queue?')) {
+    if (
+      confirm(
+        'Are you sure you want to recall this document back to your queue?',
+      )
+    ) {
       this.api.recallDocument(this.document.ID).subscribe({
         next: () => {
           this.loadDetails(this.document.ID);
         },
         error: (err) => {
-          alert('Failed to recall document. It may have already been acted on.');
-        }
+          alert(
+            'Failed to recall document. It may have already been acted on.',
+          );
+        },
       });
     }
   }

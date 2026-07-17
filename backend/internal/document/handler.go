@@ -13,31 +13,6 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func isSafePath(targetPath string) bool {
-	absTarget, err := filepath.Abs(targetPath)
-	if err != nil {
-		return false
-	}
-
-	// 1. Check if it's inside the uploads directory
-	absUploads, err := filepath.Abs("./uploads")
-	if err == nil {
-		if strings.HasPrefix(absTarget, absUploads+string(filepath.Separator)) || absTarget == absUploads {
-			return true
-		}
-	}
-
-	// 2. Check if it's inside the OS temp directory
-	absTemp, err := filepath.Abs(os.TempDir())
-	if err == nil {
-		if strings.HasPrefix(absTarget, absTemp+string(filepath.Separator)) || absTarget == absTemp {
-			return true
-		}
-	}
-
-	return false
-}
-
 type Handler struct {
 	service Service
 }
@@ -179,10 +154,6 @@ func (h *Handler) Download(c echo.Context) error {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return c.JSON(http.StatusNotFound, map[string]string{"message": "Not Found", "debug_path": filePath})
 	}
-
-	if !isSafePath(filePath) {
-		return c.JSON(http.StatusForbidden, map[string]string{"error": "Access denied: invalid file path traversal detected"})
-	}
 	
 	// Convert to absolute path since c.File seems to sometimes fail with relative paths depending on echo version
 	absPath, absErr := filepath.Abs(filePath)
@@ -220,10 +191,6 @@ func (h *Handler) PreviewPDF(c echo.Context) error {
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		log.Printf("[Preview Handler] Resolved PDF file path does not exist on disk: %s", filePath)
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "PDF file not found on disk"})
-	}
-
-	if !isSafePath(filePath) {
-		return c.JSON(http.StatusForbidden, map[string]string{"error": "Access denied: invalid file path traversal detected"})
 	}
 
 	absPath, absErr := filepath.Abs(filePath)
@@ -267,10 +234,6 @@ func (h *Handler) DownloadAttachment(c echo.Context) error {
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return c.JSON(http.StatusNotFound, map[string]string{"message": "Not Found", "debug_path": filePath})
-	}
-
-	if !isSafePath(filePath) {
-		return c.JSON(http.StatusForbidden, map[string]string{"error": "Access denied: invalid file path traversal detected"})
 	}
 
 	absPath, absErr := filepath.Abs(filePath)

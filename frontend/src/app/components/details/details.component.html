@@ -1,160 +1,428 @@
 <div class="mt-4 max-w-7xl mx-auto px-4">
   <!-- Loading State -->
   <div *ngIf="loading" class="py-16 text-center">
-    <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[var(--primary)] border-t-transparent mb-4"></div>
-    <p class="text-sm font-semibold text-[var(--text-secondary)]">Loading document details...</p>
+    <div
+      class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[var(--primary)] border-t-transparent mb-4"
+    ></div>
+    <p class="text-sm font-semibold text-[var(--text-secondary)]">
+      Loading document details...
+    </p>
   </div>
 
   <ng-container *ngIf="!loading && document">
     <div class="flex justify-between items-center mb-6">
-      <button class="app-btn-secondary cursor-pointer" (click)="router.navigate(['/dashboard'])">&larr; Back to Dashboard</button>
+      <button
+        class="app-btn-secondary cursor-pointer"
+        (click)="router.navigate(['/dashboard'])"
+      >
+        &larr; Back to Dashboard
+      </button>
     </div>
-  
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-    <!-- Main Content: Document Metadata and Actions -->
-    <div class="lg:col-span-2 space-y-6">
-      <div class="app-card relative overflow-hidden">
-        <div class="flex justify-between items-start mb-6 gap-4">
-          <div>
-            <div class="flex items-center gap-2.5 mb-2 flex-wrap">
-              <span class="text-[10px] font-bold text-[var(--primary)] bg-blue-50 dark:bg-blue-950/40 border border-blue-100/30 px-2.5 py-1 rounded">{{ document.UniqueNumber }}</span>
-              <span class="text-[9px] font-bold text-[var(--text-secondary)] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded uppercase">{{ document.Category }}</span>
-              
-              <!-- Priority Badges -->
-              <span class="text-[9px] font-bold px-2 py-1 rounded border uppercase" [ngClass]="{
-                'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700': document.Priority === 'Normal',
-                'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-455 border-rose-150 dark:border-rose-900/30': document.Priority === 'Urgent',
-                'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-455 border-amber-150 dark:border-amber-900/30': document.Priority === 'Confidential'
-              }">{{ document.Priority || 'Normal' }}</span>
-            </div>
-            <h2 class="text-2xl font-bold text-[var(--text-primary)] mt-1.5">{{ document.Title }}</h2>
-            <p class="text-xs text-[var(--text-muted)] mt-1">File: {{ document.Filename }}</p>
-          </div>
-          <span class="px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border flex-shrink-0" [ngClass]="{
-            'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-455 border-amber-200 dark:border-amber-900/30': document.Status === 'Pending Approval' || document.Status === 'Draft' || document.Status === 'Sent Back',
-            'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-455 border-emerald-200 dark:border-emerald-900/30': document.Status === 'Approved',
-            'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-455 border-rose-200 dark:border-rose-900/30': document.Status === 'Rejected',
-            'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700': document.Status === 'Closed',
-            'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-455 border-blue-200 dark:border-blue-900/30': document.Status === 'Archived'
-          }">{{ document.Status }}</span>
-        </div>
 
-        <div *ngIf="document.Description" class="mb-6 p-4 bg-slate-50 border border-[var(--border)] rounded-[var(--radius-md)]">
-          <h4 class="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Description</h4>
-          <p class="text-sm text-[var(--text-secondary)] leading-relaxed">{{ document.Description }}</p>
-        </div>
-        
-        <div class="flex flex-wrap gap-x-8 gap-y-2 mb-6 text-sm text-[var(--text-secondary)]">
-          <p>Submitted by: <strong class="text-[var(--text-primary)] font-semibold">{{ document.Uploader?.Name }}</strong></p>
-          <p>Pending with: <strong class="text-[var(--text-primary)] font-semibold">{{ document.CurrentOwner?.Name }}</strong></p>
-          <p>Assigned Date: <strong class="text-blue-600 font-semibold">{{ document.AssignedAt | date:'short' }}</strong></p>
-          <p *ngIf="document.Tags" class="flex gap-1.5 items-center">
-            Tags: 
-            <span *ngFor="let tag of document.Tags.split(',')" class="bg-slate-150/60 text-[var(--text-secondary)] text-xs px-2.5 py-0.5 rounded border border-slate-200">#{{ tag.trim() }}</span>
-          </p>
-        </div>
-
-        <button class="app-btn-secondary w-full sm:w-auto font-semibold" (click)="download()">Download Document</button>
-
-        <!-- Actions panel if current user is owner -->
-        <div *ngIf="(document.CurrentOwnerID || '').toLowerCase() === (currentUser.ID || currentUser.id || '').toLowerCase() && document.Status !== 'Approved' && document.Status !== 'Rejected' && document.Status !== 'Sent Back' && document.Status !== 'Closed' && document.Status !== 'Archived'">
-          <hr class="border-[var(--border)] my-6">
-          <h3 class="text-lg font-bold text-[var(--text-primary)]">Action Required</h3>
-          
-          <div class="mt-4 mb-4">
-            <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Remarks / Noting Sheet</label>
-            <textarea class="app-input" rows="3" [(ngModel)]="actionRemarks" placeholder="Add your comments here..."></textarea>
-          </div>
-
-
-          <!-- Conditional Forward selection dropdown -->
-          <div *ngIf="showForwardSelect" class="mb-4 p-3 bg-slate-50 dark:bg-slate-800/40 border border-[var(--border)] rounded-[var(--radius-md)]">
-            <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Forward to (Teacher / Principal)</label>
-            <div class="flex flex-col sm:flex-row gap-3">
-              <select class="app-input cursor-pointer flex-1" [(ngModel)]="selectedUser">
-                <option *ngFor="let user of users" [value]="user.id || user.ID">{{ user.name || user.Name }}</option>
-              </select>
-              <button class="app-btn-primary cursor-pointer whitespace-nowrap" (click)="submitAction('Forwarded')">Confirm Forward</button>
-            </div>
-          </div>
-          
-          <div class="flex flex-wrap gap-2.5">
-            <button class="app-btn-primary bg-[var(--accent)] hover:bg-[var(--accent-hover)] flex-1 sm:flex-initial cursor-pointer" (click)="submitAction('Approved')">Approve</button>
-            <button class="app-btn-primary flex-1 sm:flex-initial cursor-pointer" (click)="toggleForwardSelect()">Forward</button>
-            <button class="app-btn-primary bg-[var(--warning)] hover:bg-amber-600 flex-1 sm:flex-initial cursor-pointer" (click)="submitAction('Sent Back')">Send Back for Revision</button>
-            
-            <!-- Close authority -->
-            <button *ngIf="currentUser.Role === 'Principal' || currentUser.Role === 'Teacher'" class="app-btn-primary bg-slate-600 hover:bg-slate-700 flex-1 sm:flex-initial cursor-pointer" (click)="submitAction('Close')">Close File</button>
-
-            <button class="app-btn-primary bg-[var(--danger)] hover:bg-rose-600 flex-1 sm:flex-initial cursor-pointer" (click)="submitAction('Rejected')">Reject Final</button>
-          </div>
-        </div>
-
-        <!-- Replace / Resubmit File Panel if Sent Back -->
-        <div *ngIf="document.Status === 'Sent Back' && (document.UploaderID || '').toLowerCase() === (currentUser.ID || currentUser.id || '').toLowerCase()">
-          <hr class="border-[var(--border)] my-6">
-          <h3 class="text-lg font-bold text-[var(--text-primary)]">Resubmit or Replace File</h3>
-          <p class="text-[var(--text-secondary)] text-sm mb-5">This document was sent back. You can upload a revised version (optional) and resubmit it with remarks.</p>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <!-- Main Content: Document Metadata and Actions -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="app-card relative overflow-hidden">
+          <div class="flex justify-between items-start mb-6 gap-4">
             <div>
-              <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Document Title</label>
-              <input type="text" class="app-input" [(ngModel)]="document.Title" placeholder="Document title...">
+              <div class="flex items-center gap-2.5 mb-2 flex-wrap">
+                <span
+                  class="text-[10px] font-bold text-[var(--primary)] bg-blue-50 dark:bg-blue-950/40 border border-blue-100/30 px-2.5 py-1 rounded"
+                  >{{ document.UniqueNumber }}</span
+                >
+                <span
+                  class="text-[9px] font-bold text-[var(--text-secondary)] bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded uppercase"
+                  >{{ document.Category }}</span
+                >
+
+                <!-- Priority Badges -->
+                <span
+                  class="text-[9px] font-bold px-2 py-1 rounded border uppercase"
+                  [ngClass]="{
+                    'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700':
+                      document.Priority === 'Normal',
+                    'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-455 border-rose-150 dark:border-rose-900/30':
+                      document.Priority === 'Urgent',
+                    'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-455 border-amber-150 dark:border-amber-900/30':
+                      document.Priority === 'Confidential',
+                  }"
+                  >{{ document.Priority || "Normal" }}</span
+                >
+              </div>
+              <h2 class="text-2xl font-bold text-[var(--text-primary)] mt-1.5">
+                {{ document.Title }}
+              </h2>
+              <p class="text-xs text-[var(--text-muted)] mt-1">
+                File: {{ document.Filename }}
+              </p>
             </div>
-            <div>
-              <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Category</label>
-              <select class="app-input cursor-pointer" [(ngModel)]="document.Category">
-                <option *ngFor="let dt of documentTypes" [value]="dt.Name" class="bg-white text-slate-800">{{ dt.Name }}</option>
-              </select>
-            </div>
+            <span
+              class="px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border flex-shrink-0"
+              [ngClass]="{
+                'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-455 border-amber-200 dark:border-amber-900/30':
+                  document.Status === 'Pending Approval' ||
+                  document.Status === 'Draft' ||
+                  document.Status === 'Sent Back',
+                'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-455 border-emerald-200 dark:border-emerald-900/30':
+                  document.Status === 'Approved',
+                'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-455 border-rose-200 dark:border-rose-900/30':
+                  document.Status === 'Rejected',
+                'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700':
+                  document.Status === 'Closed',
+                'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-455 border-blue-200 dark:border-blue-900/30':
+                  document.Status === 'Archived',
+              }"
+              >{{ document.Status }}</span
+            >
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Description</label>
-              <textarea class="app-input" rows="1" [(ngModel)]="document.Description" placeholder="Description..."></textarea>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Tags (Comma-separated)</label>
-              <input type="text" class="app-input" [(ngModel)]="document.Tags" placeholder="e.g. class-10, term-2, urgent">
-            </div>
-          </div>
-
-          <div class="mb-4">
-            <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Priority</label>
-            <select class="app-input cursor-pointer" [(ngModel)]="document.Priority">
-              <option value="Normal">Normal</option>
-              <option value="Urgent">Urgent</option>
-              <option value="Confidential">Confidential</option>
-            </select>
-          </div>
-
-          <div class="mb-4">
-            <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Upload Revised Document (Optional)</label>
-            <input type="file" class="app-input file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-[var(--primary)] file:cursor-pointer p-1.5" (change)="onFileSelected($event)" accept=".pdf,.docx,.doc">
-            <p class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-1.5 flex items-center gap-1.5">
-              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              Word documents (.docx/.doc) will be auto-converted to PDF. Verify formatting before submitting.
+          <div
+            *ngIf="document.Description"
+            class="mb-6 p-4 bg-slate-50 border border-[var(--border)] rounded-[var(--radius-md)]"
+          >
+            <h4
+              class="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5"
+            >
+              Description
+            </h4>
+            <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
+              {{ document.Description }}
             </p>
           </div>
 
-          <div class="mb-4">
-            <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Remarks / Comments</label>
-            <textarea class="app-input" rows="2" [(ngModel)]="replaceRemarks" placeholder="Add comments explaining changes or addressing feedback..."></textarea>
+          <div
+            class="flex flex-wrap gap-x-8 gap-y-2 mb-6 text-sm text-[var(--text-secondary)]"
+          >
+            <p>
+              Submitted by:
+              <strong class="text-[var(--text-primary)] font-semibold">{{
+                document.Uploader?.Name
+              }}</strong>
+            </p>
+            <p>
+              Pending with:
+              <strong class="text-[var(--text-primary)] font-semibold">{{
+                document.CurrentOwner?.Name
+              }}</strong>
+            </p>
+            <p>
+              Assigned Date:
+              <strong class="text-blue-600 font-semibold">{{
+                document.AssignedAt | date: "short"
+              }}</strong>
+            </p>
+            <p *ngIf="document.Tags" class="flex gap-1.5 items-center">
+              Tags:
+              <span
+                *ngFor="let tag of document.Tags.split(',')"
+                class="bg-slate-150/60 text-[var(--text-secondary)] text-xs px-2.5 py-0.5 rounded border border-slate-200"
+                >#{{ tag.trim() }}</span
+              >
+            </p>
           </div>
 
-          <div class="mb-5">
-            <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Re-submit To (Teacher / Principal)</label>
-            <select class="app-input cursor-pointer" [(ngModel)]="selectedUser">
-              <option *ngFor="let user of users" [value]="user.id || user.ID" class="bg-white text-slate-800">{{ user.name || user.Name }}</option>
-            </select>
+          <button
+            class="app-btn-secondary w-full sm:w-auto font-semibold"
+            (click)="download()"
+          >
+            Download Document
+          </button>
+
+          <!-- Actions panel if current user is owner -->
+          <div
+            *ngIf="
+              (document.CurrentOwnerID || '').toLowerCase() ===
+                (currentUser.ID || currentUser.id || '').toLowerCase() &&
+              document.Status !== 'Approved' &&
+              document.Status !== 'Rejected' &&
+              document.Status !== 'Sent Back' &&
+              document.Status !== 'Closed' &&
+              document.Status !== 'Archived'
+            "
+          >
+            <hr class="border-[var(--border)] my-6" />
+            <h3 class="text-lg font-bold text-[var(--text-primary)]">
+              Action Required
+            </h3>
+
+            <div class="mt-4 mb-5">
+              <label
+                class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+                >Remarks / Noting Sheet</label
+              >
+              <textarea
+                class="app-input"
+                rows="3"
+                [(ngModel)]="actionRemarks"
+                placeholder="Add your comments here..."
+              ></textarea>
+            </div>
+
+            <!-- Conditional Forward selection dropdown -->
+            <div
+              *ngIf="showForwardSelect"
+              class="mb-5 p-4 bg-slate-50 border border-slate-200 rounded-xl"
+            >
+              <label
+                class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+                >Forward to (Teacher / Principal)</label
+              >
+              <div class="flex flex-col sm:flex-row gap-3">
+                <select
+                  class="app-input cursor-pointer flex-1"
+                  [(ngModel)]="selectedUser"
+                >
+                  <option
+                    *ngFor="let user of users"
+                    [value]="user.id || user.ID"
+                  >
+                    {{ user.name || user.Name }}
+                  </option>
+                </select>
+                <button
+                  class="app-btn-primary cursor-pointer whitespace-nowrap"
+                  (click)="submitAction('Forwarded')"
+                >
+                  Confirm Forward
+                </button>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+              <button
+                class="app-btn-primary bg-[var(--accent)] hover:bg-[var(--accent-hover)] border-0 flex-1 sm:flex-initial cursor-pointer"
+                (click)="submitAction('Approved')"
+              >
+                Approve
+              </button>
+              <button
+                class="app-btn-primary flex-1 sm:flex-initial cursor-pointer"
+                (click)="toggleForwardSelect()"
+              >
+                Forward
+              </button>
+              <button
+                class="app-btn-primary bg-[var(--warning)] hover:bg-amber-600 border-0 flex-1 sm:flex-initial cursor-pointer"
+                (click)="submitAction('Sent Back')"
+              >
+                Send Back for Revision
+              </button>
+
+              <!-- Close authority -->
+              <button
+                *ngIf="
+                  currentUser.Role === 'Principal' ||
+                  currentUser.Role === 'Teacher'
+                "
+                class="app-btn-primary bg-slate-600 hover:bg-slate-700 border-0 flex-1 sm:flex-initial cursor-pointer"
+                (click)="submitAction('Close')"
+              >
+                Close File
+              </button>
+
+              <button
+                class="app-btn-primary bg-[var(--danger)] hover:bg-rose-600 border-0 flex-1 sm:flex-initial cursor-pointer"
+                (click)="submitAction('Rejected')"
+              >
+                Reject Final
+              </button>
+            </div>
           </div>
 
-          <div *ngIf="replaceError" class="text-rose-600 mb-5 text-sm p-3 bg-rose-50 border border-rose-100 rounded-xl">{{ replaceError }}</div>
+          <!-- Replace / Resubmit File Panel if Sent Back -->
+          <div
+            *ngIf="
+              document.Status === 'Sent Back' &&
+              (document.UploaderID || '').toLowerCase() ===
+                (currentUser.ID || currentUser.id || '').toLowerCase()
+            "
+          >
+            <hr class="border-[var(--border)] my-6" />
+            <h3 class="text-lg font-bold text-[var(--text-primary)]">
+              Resubmit or Replace File
+            </h3>
+            <p class="text-[var(--text-secondary)] text-sm mb-5">
+              This document was sent back. You can upload a revised version
+              (optional) and resubmit it with remarks.
+            </p>
 
-          <button class="app-btn-primary w-full sm:w-auto cursor-pointer" (click)="replaceFile()">Resubmit Document</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+              <div>
+                <label
+                  class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+                  >Document Title</label
+                >
+                <input
+                  type="text"
+                  class="app-input"
+                  [(ngModel)]="document.Title"
+                  placeholder="Document title..."
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+                  >Category</label
+                >
+                <select
+                  class="app-input cursor-pointer"
+                  [(ngModel)]="document.Category"
+                >
+                  <option
+                    *ngFor="let dt of documentTypes"
+                    [value]="dt.Name"
+                    class="bg-white text-slate-800"
+                  >
+                    {{ dt.Name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+              <div>
+                <label
+                  class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+                  >Description</label
+                >
+                <textarea
+                  class="app-input"
+                  rows="1"
+                  [(ngModel)]="document.Description"
+                  placeholder="Description..."
+                ></textarea>
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+                  >Tags (Comma-separated)</label
+                >
+                <input
+                  type="text"
+                  class="app-input"
+                  [(ngModel)]="document.Tags"
+                  placeholder="e.g. class-10, term-2, urgent"
+                />
+              </div>
+            </div>
+
+            <div class="mb-5">
+              <label
+                class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+                >Priority</label
+              >
+              <select
+                class="app-input cursor-pointer"
+                [(ngModel)]="document.Priority"
+              >
+                <option value="Normal">Normal</option>
+                <option value="Urgent">Urgent</option>
+                <option value="Confidential">Confidential</option>
+              </select>
+            </div>
+
+            <div class="mb-5">
+              <label
+                class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+                >Upload Revised Document (Optional)</label
+              >
+              <input
+                type="file"
+                class="app-input file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-[var(--primary)] file:cursor-pointer"
+                (change)="onFileSelected($event)"
+                accept=".pdf,.docx,.doc"
+              />
+              <p
+                class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-1.5 flex items-center gap-1.5"
+              >
+                <svg
+                  class="h-3.5 w-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                Word documents (.docx/.doc) will be auto-converted to PDF.
+                Verify formatting before submitting.
+              </p>
+            </div>
+
+            <div class="mb-5">
+              <label
+                class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+                >Remarks / Comments</label
+              >
+              <textarea
+                class="app-input"
+                rows="2"
+                [(ngModel)]="replaceRemarks"
+                placeholder="Add comments explaining changes or addressing feedback..."
+              ></textarea>
+            </div>
+
+            <div class="mb-6">
+              <label
+                class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-2"
+                >Re-submit To (Teacher / Principal)</label
+              >
+              <select
+                class="app-input cursor-pointer"
+                [(ngModel)]="selectedUser"
+              >
+                <option
+                  *ngFor="let user of users"
+                  [value]="user.id || user.ID"
+                  class="bg-white text-slate-800"
+                >
+                  {{ user.name || user.Name }}
+                </option>
+              </select>
+            </div>
+
+            <div
+              *ngIf="replaceError"
+              class="text-rose-600 mb-5 text-sm p-3 bg-rose-50 border border-rose-100 rounded-xl"
+            >
+              {{ replaceError }}
+            </div>
+
+            <button
+              class="app-btn-primary w-full sm:w-auto cursor-pointer"
+              (click)="replaceFile()"
+            >
+              Resubmit Document
+            </button>
+          </div>
+        </div>
+
+        <!-- Document Preview Card -->
+        <div
+          class="app-card"
+          *ngIf="
+            isPdf(document.Filename) ||
+            isDocx(document.Filename) ||
+            isDoc(document.Filename)
+          "
+        >
+          <h3 class="text-lg font-bold text-[var(--text-primary)] mb-4">
+            Document Preview
+          </h3>
+          <div
+            class="w-full h-[600px] rounded-xl overflow-hidden bg-slate-50 border border-[var(--border)]"
+          >
+            <iframe
+              [src]="safePdfUrl"
+              width="100%"
+              height="100%"
+              class="border-0"
+            ></iframe>
+          </div>
         </div>
         <!-- Student Assignment Submission Panel -->
         <div *ngIf="document.Category === 'Assignment Broadcast' && (currentUser.Role === 'Student' || currentUser.role === 'Student')">
@@ -202,55 +470,75 @@
 
       </div>
 
-      <!-- Document Preview Card -->
-      <div class="app-card" *ngIf="isPdf(document.Filename) || isDocx(document.Filename) || isDoc(document.Filename)">
-        <h3 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-3">Document Preview</h3>
-        <div class="w-full h-[600px] rounded-lg overflow-hidden bg-slate-50 border border-[var(--border)]">
-          <iframe [src]="safePdfUrl" width="100%" height="100%" class="border-0"></iframe>
-        </div>
-      </div>
-    </div>
+      <!-- Sidebar: Workflow History -->
+      <div class="lg:col-span-1">
+        <div class="app-card">
+          <h3 class="text-lg font-bold text-[var(--text-primary)] mb-6">
+            Workflow History
+          </h3>
 
-    <!-- Sidebar: Workflow History -->
-    <div class="lg:col-span-1">
-      <div class="app-card">
-        <h3 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-4">Workflow History</h3>
-        
-        <div class="relative pl-5 border-l border-[var(--border)] space-y-4">
-          <div class="relative" *ngFor="let item of history">
-            <!-- Timeline indicator dot -->
-            <div class="absolute -left-[28.5px] top-1.5 w-3 h-3 rounded-full border-2 border-white shadow-sm" [ngClass]="{
-              'bg-[var(--danger)]': item.Action === 'Rejected',
-              'bg-[var(--accent)]': item.Action === 'Approved',
-              'bg-[var(--warning)]': item.Action === 'Sent Back',
-              'bg-[var(--primary)]': item.Action !== 'Rejected' && item.Action !== 'Approved' && item.Action !== 'Sent Back'
-            }"></div>
-            
-            <div class="bg-slate-50 dark:bg-slate-800/40 border border-[var(--border)] p-3 rounded-md shadow-xs">
-              <div class="font-bold text-[var(--text-primary)] text-xs mb-0.5">{{ item.Action }}</div>
-              <div class="text-[11px] text-[var(--text-secondary)] mb-1">
-                By <strong class="text-[var(--text-primary)] font-semibold">{{ item.Actor.Name }}</strong>
-                <span *ngIf="item.Target"> &rarr; <strong class="text-[var(--text-primary)] font-semibold">{{ item.Target.Name }}</strong></span>
-              </div>
-              <div class="text-[9px] text-[var(--text-muted)] mb-1">
-                {{ item.CreatedAt | date:'short' }}
-              </div>
-              <div *ngIf="item.Remarks" class="text-xs text-[var(--text-secondary)] italic border-t border-[var(--border)] pt-1.5 mt-1.5 leading-normal">
-                "{{ item.Remarks }}"
-              </div>
-              <div *ngIf="item.Signature" class="mt-2 border-t border-[var(--border)] pt-2 flex flex-col gap-0.5">
-                <span class="block text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Verification Key:</span>
-                <span class="inline-block self-start px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-400 border border-emerald-200/50 font-mono rounded text-[10px] shadow-2xs font-semibold">
-                  🔐 {{ item.Signature }}
-                </span>
+          <div class="relative pl-6 border-l border-[var(--border)] space-y-6">
+            <div class="relative" *ngFor="let item of history">
+              <!-- Timeline indicator dot -->
+              <div
+                class="absolute -left-[31px] top-1.5 w-3.5 h-3.5 rounded-full border-[3px] border-white shadow-sm"
+                [ngClass]="{
+                  'bg-[var(--danger)]': item.Action === 'Rejected',
+                  'bg-[var(--accent)]': item.Action === 'Approved',
+                  'bg-[var(--warning)]': item.Action === 'Sent Back',
+                  'bg-[var(--primary)]':
+                    item.Action !== 'Rejected' &&
+                    item.Action !== 'Approved' &&
+                    item.Action !== 'Sent Back',
+                }"
+              ></div>
+
+              <div
+                class="bg-slate-50 border border-[var(--border)] p-4 rounded-[var(--radius-md)] shadow-sm"
+              >
+                <div class="font-bold text-[var(--text-primary)] text-sm mb-1">
+                  {{ item.Action }}
+                </div>
+                <div class="text-xs text-[var(--text-secondary)] mb-2">
+                  By
+                  <strong class="text-[var(--text-primary)] font-medium">{{
+                    item.Actor.Name
+                  }}</strong>
+                  <span *ngIf="item.Target">
+                    &rarr; To
+                    <strong class="text-[var(--text-primary)] font-medium">{{
+                      item.Target.Name
+                    }}</strong></span
+                  >
+                </div>
+                <div class="text-[10px] text-[var(--text-muted)] mb-2">
+                  {{ item.CreatedAt | date: "short" }}
+                </div>
+                <div
+                  *ngIf="item.Remarks"
+                  class="text-xs text-[var(--text-secondary)] italic border-t border-[var(--border)] pt-2 mt-2 leading-relaxed"
+                >
+                  "{{ item.Remarks }}"
+                </div>
+                <div
+                  *ngIf="item.Signature"
+                  class="mt-3 border-t border-[var(--border)] pt-3 flex flex-col gap-1"
+                >
+                  <span
+                    class="block text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider"
+                    >Verification Key:</span
+                  >
+                  <span
+                    class="inline-block self-start px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-250 font-mono rounded text-[11px] shadow-2xs font-semibold"
+                  >
+                    🔐 {{ item.Signature }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
   </ng-container>
 </div>
-
-

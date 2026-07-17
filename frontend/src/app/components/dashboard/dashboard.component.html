@@ -1,61 +1,165 @@
-<div class="mt-2 max-w-7xl mx-auto">
-  
-  <!-- Welcome Banner -->
-  <div class="mb-5 relative overflow-hidden bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-lg p-5 shadow-sm border border-slate-800 animate-none">
-    <!-- Abstract decorative background shapes -->
-    <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-500/10 rounded-full blur-xl pointer-events-none"></div>
-    <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-amber-500/5 rounded-full blur-xl pointer-events-none"></div>
+<div class="mt-2 max-w-7xl mx-auto space-y-6">
+  <!-- Official Government / e-Gov Welcome Banner -->
+  <div class="relative overflow-hidden bg-slate-900 dark:bg-slate-950 text-white rounded-lg border border-slate-800 shadow-md">
+    <!-- Tricolor Top Bar Accent -->
+    <div class="h-1.5 w-full flex">
+      <div class="w-1/3 bg-[#FF9933]"></div> <!-- Saffron -->
+      <div class="w-1/3 bg-white"></div>     <!-- White -->
+      <div class="w-1/3 bg-[#128807]"></div> <!-- Green -->
+    </div>
     
-    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <div class="text-[9px] font-extrabold uppercase tracking-widest text-blue-400 mb-0.5">State eGov Portal</div>
-        <h1 class="text-xl font-bold tracking-tight">
-          Welcome, <span class="text-amber-400">{{ currentUser?.Name || currentUser?.name }}</span>
+    <div class="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 relative">
+      <!-- Watermark Seal Background -->
+      <div class="absolute right-0 top-0 bottom-0 opacity-5 pointer-events-none flex items-center pr-12 hidden lg:flex">
+        <svg class="w-64 h-64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2v20M2 12h20" />
+          <circle cx="12" cy="12" r="6" />
+        </svg>
+      </div>
+
+      <div class="relative z-10 space-y-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="bg-blue-900/60 text-blue-300 text-[9px] font-bold tracking-widest uppercase px-2.5 py-1 rounded border border-blue-800/40">
+            SAMARTH e-Gov Suite
+          </span>
+          
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-slate-100">
+          Welcome, <span class="text-blue-400 font-semibold">{{ currentUser?.Name || currentUser?.name }}</span>
         </h1>
-        <p class="text-[11px] text-slate-300 mt-1 max-w-2xl leading-relaxed">
-          Access your documents, monitor SLA status, submit audit logs, and manage administrative school requests under a secure digital layout.
+        <p class="text-xs text-slate-350 max-w-2xl leading-relaxed">
+          Access the secure document validation gateway, audit academic logs, monitor service level agreements (SLA), and manage institutional routing workflows under strict compliance directives.
         </p>
       </div>
-      <div>
-        <button class="app-btn-primary flex items-center gap-2 cursor-pointer border-0 shadow-sm" (click)="goToUpload()">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>
-          Submit New Document
+
+      <div class="relative z-10 flex-shrink-0">
+        <button
+          class="app-btn-primary flex items-center gap-2 cursor-pointer border-0 shadow-lg shadow-blue-900/40 hover:scale-[1.02] active:scale-[0.98] transition-all bg-blue-600 hover:bg-blue-700 text-white rounded-md font-bold text-xs !py-2.5"
+          (click)="goToUpload()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="w-4 h-4"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v8" />
+            <path d="M8 12h8" />
+          </svg>
+          Upload Official Document
         </button>
       </div>
     </div>
   </div>
 
   <!-- Quick Launch Module Grid -->
-  <div class="mb-5" *ngIf="documentTypes && documentTypes.length > 0">
-    <h3 class="text-[10px] font-extrabold text-[var(--text-muted)] uppercase tracking-wider mb-3">Quick Launch Modules</h3>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-      <div *ngFor="let dt of documentTypes" 
-           class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-3 flex flex-col justify-between shadow-xs hover:shadow-sm hover:border-[var(--primary)] transition-all duration-150 cursor-pointer"
-           [class.ring-1]="selectedFolder === dt.Name"
-           [class.ring-[var(--primary)]]="selectedFolder === dt.Name"
-           (click)="selectFolder(dt.Name)">
-        <div>
-          <div class="w-8 h-8 rounded-md flex items-center justify-center mb-2 shadow-xs border" [ngClass]="getLauncherColorClass(dt.Name)">
-            <ng-container [ngSwitch]="dt.Name.toLowerCase()">
-              <svg *ngSwitchCase="'assignment'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-              <svg *ngSwitchCase="'leave application'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-              <svg *ngSwitchCase="'report'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-              <svg *ngSwitchCase="'permission slip'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3M19 4l3 3"/></svg>
-              <svg *ngSwitchCase="'transfer certificate request'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-              <svg *ngSwitchCase="'general request letter'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-              <svg *ngSwitchCase="'fee concession form'" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              <svg *ngSwitchDefault class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
-            </ng-container>
+  <div class="space-y-4" *ngIf="documentTypes && documentTypes.length > 0">
+    <div class="flex items-center justify-between border-b border-[var(--border)] pb-2">
+      <h3 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider flex items-center gap-2">
+        <span class="w-1 h-3 bg-slate-700 rounded-xs"></span>
+        Quick Launch Modules
+      </h3>
+      <span class="text-[10px] text-[var(--text-muted)] font-semibold">Select a module to filter records</span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div
+        *ngFor="let dt of documentTypes"
+        class="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-5 flex flex-col justify-between shadow-xs hover:shadow-sm hover:border-slate-400 transition-all duration-150 cursor-pointer"
+        [class.ring-1]="selectedFolder === dt.Name"
+        [class.ring-slate-800]="selectedFolder === dt.Name"
+        [class.border-slate-800]="selectedFolder === dt.Name"
+        (click)="selectFolder(dt.Name)"
+      >
+        <div class="space-y-4">
+          <!-- Icon and ID header -->
+          <div class="flex items-center justify-between">
+            <div class="w-8 h-8 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-450">
+              <ng-container [ngSwitch]="dt.Name.toLowerCase()">
+                <!-- Assignment -->
+                <svg *ngSwitchCase="'assignment'" class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                </svg>
+                <!-- Leave Application -->
+                <svg *ngSwitchCase="'leave application'" class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                  <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                  <path d="M10 9H8" />
+                  <path d="M16 13H8" />
+                  <path d="M16 17H8" />
+                </svg>
+                <!-- Report -->
+                <svg *ngSwitchCase="'report'" class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                  <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                  <path d="M10 9H8" />
+                  <path d="M16 13H8" />
+                  <path d="M16 17H8" />
+                </svg>
+                <!-- Permission Slip -->
+                <svg *ngSwitchCase="'permission slip'" class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <rect x="9" y="9" width="6" height="6" rx="1" />
+                  <path d="M12 2v4M12 18v4M4 12h4M16 12h4" />
+                </svg>
+                <!-- General Request Letter -->
+                <svg *ngSwitchCase="'general request letter'" class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="16" x="2" y="4" rx="2" />
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                </svg>
+                <!-- Circular -->
+                <svg *ngSwitchCase="'circular'" class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+                  <path d="M6 6h10M6 10h10" />
+                </svg>
+                <!-- Default -->
+                <svg *ngSwitchDefault class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+                </svg>
+              </ng-container>
+            </div>
+            
+            <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900 border border-slate-200/50 px-2 py-0.5 rounded">
+              SMX-{{ dt.Slug.substring(0, 3).toUpperCase() }}
+            </span>
           </div>
-          <div class="font-bold text-xs text-[var(--text-primary)] tracking-tight mb-0.5 truncate">{{ dt.Name }}</div>
-          <div class="text-[10px] text-[var(--text-secondary)] leading-relaxed line-clamp-2">
-            Manage {{ dt.Name.toLowerCase() }} forms, file attachments, and active signatures.
+
+          <div class="space-y-1">
+            <h4 class="font-semibold text-xs text-[var(--text-primary)]">
+              {{ dt.Name }}
+            </h4>
+            <p class="text-[10px] text-[var(--text-secondary)] leading-relaxed min-h-[40px]">
+              <ng-container [ngSwitch]="dt.Name.toLowerCase()">
+                <span *ngSwitchCase="'assignment'">Evaluation and submission gateway for term-end student academic assignments and assessment files.</span>
+                <span *ngSwitchCase="'leave application'">Official employee and student leave processing route incorporating multi-stage evaluation.</span>
+                <span *ngSwitchCase="'permission slip'">Secure approval workflow for student activities, educational excursions, and permissions.</span>
+                <span *ngSwitchCase="'general request letter'">Formal institutional channel for routing student petitions, administrative claims, and correspondence.</span>
+                <span *ngSwitchCase="'report'">Official record dashboard for submitting annual logs, departmental academic reports, and operations.</span>
+                <span *ngSwitchCase="'circular'">General broadcast framework for public educational orders, institutional directives, and general circulars.</span>
+                <span *ngSwitchDefault>Manage forms, files, audit trails, and multi-stage workflow approvals for {{ dt.Name }}.</span>
+              </ng-container>
+            </p>
           </div>
         </div>
-        <div class="mt-2 pt-2 border-t border-[var(--border)]/40 flex items-center justify-between">
-          <span class="text-[9px] font-bold text-[var(--text-muted)] bg-[var(--background)] border border-[var(--border)] px-1.5 py-0.5 rounded">SLA: {{ dt.SlaHours }}h</span>
-          <button class="px-2 py-0.5 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white font-bold text-[9px] rounded cursor-pointer flex items-center gap-0.5 border-0 transition-all hover:translate-x-0.5"
-                  (click)="$event.stopPropagation(); launchNewDoc(dt.Name)">
+
+        <div class="mt-4 pt-3 border-t border-[var(--border)]/40 flex items-center justify-between">
+          <span class="text-[9px] font-bold tracking-wider px-2 py-0.5 rounded flex items-center gap-1 border bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800">
+            SLA: {{ dt.SlaHours > 0 ? dt.SlaHours + 'h' : 'None' }}
+          </span>
+          
+          <button
+            class="px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-[9px] tracking-wide uppercase rounded-md cursor-pointer flex items-center gap-1 border-0 transition-all hover:translate-x-0.5"
+            (click)="$event.stopPropagation(); launchNewDoc(dt.Name)"
+          >
             Launch &rsaquo;
           </button>
         </div>
@@ -64,142 +168,357 @@
   </div>
 
   <!-- Priority Filter Bar -->
-  <div class="flex flex-wrap gap-2 mb-6 justify-between items-center bg-[var(--surface)] p-3 border border-[var(--border)] rounded-xl shadow-sm">
+  <div
+    class="flex flex-wrap gap-2 mb-6 justify-between items-center bg-[var(--surface)] p-3 border border-[var(--border)] rounded-xl shadow-sm"
+  >
     <div class="flex items-center gap-1.5 flex-wrap">
-      <span class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mr-2">Priority:</span>
-      <button class="px-3.5 py-1 text-xs rounded-md cursor-pointer font-semibold transition-all border bg-transparent"
-              [ngClass]="{'bg-[var(--primary)]! text-white border-[var(--primary)]': selectedPriority === 'All', 'text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--background)]': selectedPriority !== 'All'}"
-              (click)="selectPriority('All')">All</button>
-      <button class="px-3.5 py-1 text-xs rounded-md cursor-pointer font-semibold transition-all border bg-transparent"
-              [ngClass]="{'bg-slate-800! dark:bg-slate-700! text-white border-slate-800 dark:border-slate-700': selectedPriority === 'Normal', 'text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--background)]': selectedPriority !== 'Normal'}"
-              (click)="selectPriority('Normal')">Normal</button>
-      <button class="px-3.5 py-1 text-xs rounded-md cursor-pointer font-semibold transition-all border bg-transparent"
-              [ngClass]="{'bg-rose-600! text-white border-rose-600': selectedPriority === 'Urgent', 'text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-900/30 hover:bg-[var(--background)]': selectedPriority !== 'Urgent'}"
-              (click)="selectPriority('Urgent')">Urgent</button>
-      <button class="px-3.5 py-1 text-xs rounded-md cursor-pointer font-semibold transition-all border bg-transparent"
-              [ngClass]="{'bg-amber-600! text-white border-amber-600': selectedPriority === 'Confidential', 'text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/30 hover:bg-[var(--background)]': selectedPriority !== 'Confidential'}"
-              (click)="selectPriority('Confidential')">Confidential</button>
+      <span
+        class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mr-2"
+        >Priority:</span
+      >
+      <button
+        class="px-3.5 py-1 text-xs rounded-md cursor-pointer font-semibold transition-all border bg-transparent"
+        [ngClass]="{
+          'bg-[var(--primary)]! text-white border-[var(--primary)]':
+            selectedPriority === 'All',
+          'text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--background)]':
+            selectedPriority !== 'All',
+        }"
+        (click)="selectPriority('All')"
+      >
+        All
+      </button>
+      <button
+        class="px-3.5 py-1 text-xs rounded-md cursor-pointer font-semibold transition-all border bg-transparent"
+        [ngClass]="{
+          'bg-slate-800! dark:bg-slate-700! text-white border-slate-800 dark:border-slate-700':
+            selectedPriority === 'Normal',
+          'text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--background)]':
+            selectedPriority !== 'Normal',
+        }"
+        (click)="selectPriority('Normal')"
+      >
+        Normal
+      </button>
+      <button
+        class="px-3.5 py-1 text-xs rounded-md cursor-pointer font-semibold transition-all border bg-transparent"
+        [ngClass]="{
+          'bg-rose-600! text-white border-rose-600':
+            selectedPriority === 'Urgent',
+          'text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-900/30 hover:bg-[var(--background)]':
+            selectedPriority !== 'Urgent',
+        }"
+        (click)="selectPriority('Urgent')"
+      >
+        Urgent
+      </button>
+      <button
+        class="px-3.5 py-1 text-xs rounded-md cursor-pointer font-semibold transition-all border bg-transparent"
+        [ngClass]="{
+          'bg-amber-600! text-white border-amber-600':
+            selectedPriority === 'Confidential',
+          'text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/30 hover:bg-[var(--background)]':
+            selectedPriority !== 'Confidential',
+        }"
+        (click)="selectPriority('Confidential')"
+      >
+        Confidential
+      </button>
     </div>
 
     <!-- Navigation Tab Buttons (History Removed) -->
     <div class="flex border-b border-[var(--border)]/10 gap-1 mt-2 sm:mt-0">
       <!-- Common All Files Tab -->
-      <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
-              [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'all_files', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'all_files'}"
-              (click)="selectTab('all_files')">All ({{ getTabCount('all_files') }})</button>
-      
+      <button
+        class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
+        [ngClass]="{
+          'border-[var(--primary)] text-[var(--primary)]':
+            activeTab === 'all_files',
+          'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]':
+            activeTab !== 'all_files',
+        }"
+        (click)="selectTab('all_files')"
+      >
+        All ({{ getTabCount("all_files") }})
+      </button>
+
       <!-- Admin Specific Tabs -->
       <ng-container *ngIf="currentUser.Role === 'Admin'">
-        <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
-                [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'pending_me', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'pending_me'}"
-                (click)="selectTab('pending_me')">Pending Review ({{ getTabCount('pending_me') }})</button>
-      </ng-container>
-      
-      <!-- Non-Admin Tabs -->
-      <ng-container *ngIf="currentUser.Role !== 'Admin'">
-        <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
-                [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'pending_me', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'pending_me'}"
-                (click)="selectTab('pending_me')">Pending with me ({{ getTabCount('pending_me') }})</button>
-        <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
-                [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'sent_out', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'sent_out'}"
-                (click)="selectTab('sent_out')">Sent out ({{ getTabCount('sent_out') }})</button>
+        <button
+          class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
+          [ngClass]="{
+            'border-[var(--primary)] text-[var(--primary)]':
+              activeTab === 'pending_me',
+            'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]':
+              activeTab !== 'pending_me',
+          }"
+          (click)="selectTab('pending_me')"
+        >
+          Pending Review ({{ getTabCount("pending_me") }})
+        </button>
       </ng-container>
 
-      <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
-              [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'overdue', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'overdue'}"
-              (click)="selectTab('overdue')">Overdue ({{ getTabCount('overdue') }})</button>
-      <button class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
-              [ngClass]="{'border-[var(--primary)] text-[var(--primary)]': activeTab === 'approved', 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]': activeTab !== 'approved'}"
-              (click)="selectTab('approved')">Approved ({{ getTabCount('approved') }})</button>
+      <!-- Non-Admin Tabs -->
+      <ng-container *ngIf="currentUser.Role !== 'Admin'">
+        <button
+          class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
+          [ngClass]="{
+            'border-[var(--primary)] text-[var(--primary)]':
+              activeTab === 'pending_me',
+            'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]':
+              activeTab !== 'pending_me',
+          }"
+          (click)="selectTab('pending_me')"
+        >
+          Pending with me ({{ getTabCount("pending_me") }})
+        </button>
+        <button
+          class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
+          [ngClass]="{
+            'border-[var(--primary)] text-[var(--primary)]':
+              activeTab === 'sent_out',
+            'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]':
+              activeTab !== 'sent_out',
+          }"
+          (click)="selectTab('sent_out')"
+        >
+          Sent out ({{ getTabCount("sent_out") }})
+        </button>
+      </ng-container>
+
+      <button
+        class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
+        [ngClass]="{
+          'border-[var(--primary)] text-[var(--primary)]':
+            activeTab === 'overdue',
+          'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]':
+            activeTab !== 'overdue',
+        }"
+        (click)="selectTab('overdue')"
+      >
+        Overdue ({{ getTabCount("overdue") }})
+      </button>
+      <button
+        class="px-4 py-2 text-xs font-bold border-b-2 transition-all cursor-pointer bg-transparent border-0"
+        [ngClass]="{
+          'border-[var(--primary)] text-[var(--primary)]':
+            activeTab === 'approved',
+          'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]':
+            activeTab !== 'approved',
+        }"
+        (click)="selectTab('approved')"
+      >
+        Approved ({{ getTabCount("approved") }})
+      </button>
     </div>
   </div>
 
   <div class="app-card">
     <div class="flex justify-between items-center mb-6">
-      <h3 class="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
-        <span>Submissions &rsaquo; {{ selectedFolder }} &rsaquo; {{ activeTab }}</span>
+      <h3
+        class="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider"
+      >
+        <span
+          >Submissions &rsaquo; {{ selectedFolder }} &rsaquo;
+          {{ activeTab }}</span
+        >
       </h3>
-      <span class="text-[10px] font-bold text-[var(--text-muted)] bg-[var(--background)] border border-[var(--border)] px-2.5 py-0.5 rounded-full">
+      <span
+        class="text-[10px] font-bold text-[var(--text-muted)] bg-[var(--background)] border border-[var(--border)] px-2.5 py-0.5 rounded-full"
+      >
         <span>{{ filteredDocuments.length }} items</span>
       </span>
     </div>
-    
+
     <!-- ── STANDARD DOCUMENT LIST ── -->
     <!-- Loading State -->
     <div *ngIf="loading" class="py-16 text-center">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[var(--primary)] border-t-transparent mb-4"></div>
-      <p class="text-sm font-semibold text-[var(--text-secondary)]">Loading documents...</p>
+      <div
+        class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-[var(--primary)] border-t-transparent mb-4"
+      ></div>
+      <p class="text-sm font-semibold text-[var(--text-secondary)]">
+        Loading documents...
+      </p>
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="!loading && filteredDocuments.length === 0" class="text-center py-12 text-[var(--text-muted)]">
+    <div
+      *ngIf="!loading && filteredDocuments.length === 0"
+      class="text-center py-12 text-[var(--text-muted)]"
+    >
       No documents found matching these filters.
     </div>
 
     <!-- Active List -->
-    <div class="space-y-2" *ngIf="!loading && filteredDocuments.length > 0">
-      <div *ngFor="let doc of filteredDocuments" class="py-2.5 px-3 bg-[var(--background)]/20 hover:bg-[var(--background)]/60 border border-[var(--border)] rounded-md flex justify-between items-center transition-all duration-150 cursor-pointer shadow-xs hover:shadow-sm" (click)="goToDetails(doc.ID)">
+    <div class="space-y-3.5" *ngIf="!loading && filteredDocuments.length > 0">
+      <div
+        *ngFor="let doc of filteredDocuments"
+        class="p-4 bg-[var(--background)]/30 hover:bg-[var(--background)]/75 border border-[var(--border)] rounded-xl flex justify-between items-center transition-all duration-200 cursor-pointer shadow-xs hover:shadow-sm"
+        (click)="goToDetails(doc.ID)"
+      >
         <div class="flex-1 min-w-0 pr-4">
-          <div class="flex items-center gap-2 mb-1 flex-wrap">
-            <span class="text-[9px] font-bold text-[var(--primary)] bg-blue-50 dark:bg-blue-950/40 border border-blue-100/30 px-2 py-0.5 rounded">{{ doc.UniqueNumber }}</span>
-            <span class="text-[9px] font-bold text-[var(--text-secondary)] bg-slate-200/50 dark:bg-slate-800 border border-slate-350/10 px-2 py-0.5 rounded uppercase">{{ doc.Category }}</span>
-            
-            <!-- Priority Badge -->
-            <span class="text-[9px] font-bold px-2 py-0.5 rounded border uppercase" [ngClass]="{
-              'bg-slate-100 dark:bg-slate-850 text-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700': doc.Priority === 'Normal',
-              'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-100 dark:border-rose-900/20': doc.Priority === 'Urgent',
-              'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/20': doc.Priority === 'Confidential'
-            }">{{ doc.Priority || 'Normal' }}</span>
+          <div class="flex items-center gap-2.5 mb-1.5 flex-wrap">
+            <span
+              class="text-[10px] font-bold text-[var(--primary)] bg-blue-50 dark:bg-blue-950/40 border border-blue-100/30 px-2.5 py-0.5 rounded"
+              >{{ doc.UniqueNumber }}</span
+            >
+            <span
+              class="text-[9px] font-bold text-[var(--text-secondary)] bg-slate-200/50 dark:bg-slate-800 border border-slate-350/20 px-2 py-0.5 rounded uppercase"
+              >{{ doc.Category }}</span
+            >
 
-            <div class="font-bold text-xs text-[var(--text-primary)] truncate">{{ doc.Title }}</div>
+            <!-- Priority Badge -->
+            <span
+              class="text-[9px] font-bold px-2 py-0.5 rounded border uppercase"
+              [ngClass]="{
+                'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700':
+                  doc.Priority === 'Normal',
+                'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-455 border-rose-150 dark:border-rose-900/30':
+                  doc.Priority === 'Urgent',
+                'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-455 border-amber-150 dark:border-amber-900/30':
+                  doc.Priority === 'Confidential',
+              }"
+              >{{ doc.Priority || "Normal" }}</span
+            >
+
+            <div
+              class="font-bold text-[var(--text-primary)] text-base truncate"
+            >
+              {{ doc.Title }}
+            </div>
           </div>
-          <div class="text-xs text-[var(--text-secondary)] mb-1 truncate" *ngIf="doc.Description">
+          <div
+            class="text-sm text-[var(--text-secondary)] mb-2 truncate"
+            *ngIf="doc.Description"
+          >
             {{ doc.Description }}
           </div>
-          <div class="text-[10px] text-[var(--text-muted)] flex flex-wrap gap-x-4 gap-y-1 items-center">
-            <span>Submitted by: <strong class="text-[var(--text-secondary)] font-medium">{{ doc.Uploader?.Name }}</strong></span>
-            <span>Pending with: <strong class="text-[var(--text-secondary)] font-medium">{{ doc.CurrentOwner?.Name }}</strong></span>
-            <span>Holding: <strong class="text-blue-700 dark:text-blue-400 font-semibold">{{ getHoldingDuration(doc.AssignedAt) }}</strong></span>
-            <span>Date: {{ doc.CreatedAt | date:'short' }}</span>
+          <div
+            class="text-xs text-[var(--text-muted)] flex flex-wrap gap-x-4 gap-y-1 items-center"
+          >
+            <span
+              >Submitted by:
+              <strong class="text-[var(--text-secondary)] font-medium">{{
+                doc.Uploader?.Name
+              }}</strong></span
+            >
+            <span
+              >Pending with:
+              <strong class="text-[var(--text-secondary)] font-medium">{{
+                doc.CurrentOwner?.Name
+              }}</strong></span
+            >
+            <span
+              >Holding:
+              <strong class="text-blue-600 dark:text-blue-400 font-semibold">{{
+                getHoldingDuration(doc.AssignedAt)
+              }}</strong></span
+            >
+            <span>Date: {{ doc.CreatedAt | date: "short" }}</span>
           </div>
         </div>
         <div class="flex-shrink-0">
-          <span class="px-2.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border" [ngClass]="{
-            'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/20': doc.Status === 'Pending Approval' || doc.Status === 'Draft' || doc.Status === 'Sent Back',
-            'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-250 dark:border-emerald-900/20': doc.Status === 'Approved',
-            'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-900/20': doc.Status === 'Rejected',
-            'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700': doc.Status === 'Closed',
-            'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900/20': doc.Status === 'Archived'
-          }">{{ doc.Status }}</span>
+          <span
+            class="px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border"
+            [ngClass]="{
+              'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-440 border-amber-200 dark:border-amber-900/30':
+                doc.Status === 'Pending Approval' ||
+                doc.Status === 'Draft' ||
+                doc.Status === 'Sent Back',
+              'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-440 border-emerald-200 dark:border-emerald-900/30':
+                doc.Status === 'Approved',
+              'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-440 border-rose-200 dark:border-rose-900/30':
+                doc.Status === 'Rejected',
+              'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700':
+                doc.Status === 'Closed',
+              'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-440 border-blue-200 dark:border-blue-900/30':
+                doc.Status === 'Archived',
+            }"
+            >{{ doc.Status }}</span
+          >
         </div>
       </div>
     </div>
   </div>
 
   <!-- Analytical Reports Panel (Only visible for Admin) -->
-  <div class="mt-8 space-y-6" *ngIf="reportsData && currentUser.Role === 'Admin'">
-    <hr class="border-[var(--border)] my-8">
-    <h2 class="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-blue-500"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+  <div
+    class="mt-8 space-y-6"
+    *ngIf="reportsData && currentUser.Role === 'Admin'"
+  >
+    <hr class="border-[var(--border)] my-8" />
+    <h2
+      class="text-xl font-bold text-[var(--text-primary)] flex items-center gap-2"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="w-5 h-5 text-blue-500"
+      >
+        <line x1="18" x2="18" y1="20" y2="10" />
+        <line x1="12" x2="12" y1="20" y2="4" />
+        <line x1="6" x2="6" y1="20" y2="14" />
+      </svg>
       Administrative Reports & Metrics
     </h2>
-    
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-      <div class="bg-[var(--surface)] p-4 border border-[var(--border)] rounded-lg shadow-sm">
-        <h4 class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Total Active Files</h4>
-        <p class="text-2xl font-extrabold text-[var(--primary)]">{{ reportsData.total_active_files }}</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div
+        class="bg-[var(--surface)] p-5 border border-[var(--border)] rounded-2xl shadow-sm"
+      >
+        <h4
+          class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1"
+        >
+          Total Active Files
+        </h4>
+        <p class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
+          {{ reportsData.total_active_files }}
+        </p>
       </div>
-      <div class="bg-[var(--surface)] p-4 border border-[var(--border)] rounded-lg shadow-sm">
-        <h4 class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Approved Files</h4>
-        <p class="text-2xl font-extrabold text-emerald-650 dark:text-emerald-400">{{ reportsData.total_approved_files }}</p>
+      <div
+        class="bg-[var(--surface)] p-5 border border-[var(--border)] rounded-2xl shadow-sm"
+      >
+        <h4
+          class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1"
+        >
+          Approved Files
+        </h4>
+        <p
+          class="text-3xl font-extrabold text-emerald-650 dark:text-emerald-400"
+        >
+          {{ reportsData.total_approved_files }}
+        </p>
       </div>
-      <div class="bg-[var(--surface)] p-4 border border-[var(--border)] rounded-lg shadow-sm">
-        <h4 class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Average Resolution Time</h4>
-        <p class="text-2xl font-extrabold text-amber-600 dark:text-amber-400">{{ reportsData.avg_turnaround_hours | number:'1.1-1' }}h</p>
+      <div
+        class="bg-[var(--surface)] p-5 border border-[var(--border)] rounded-2xl shadow-sm"
+      >
+        <h4
+          class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1"
+        >
+          Average Resolution Time
+        </h4>
+        <p class="text-3xl font-extrabold text-amber-600 dark:text-amber-400">
+          {{ reportsData.avg_turnaround_hours | number: "1.1-1" }}h
+        </p>
       </div>
-      <div class="bg-[var(--surface)] p-4 border border-[var(--border)] rounded-lg shadow-sm">
-        <h4 class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1">SLA Breach Ratio</h4>
-        <p class="text-2xl font-extrabold text-rose-650 dark:text-rose-400">{{ reportsData.sla_breaches }} breaches</p>
+      <div
+        class="bg-[var(--surface)] p-5 border border-[var(--border)] rounded-2xl shadow-sm"
+      >
+        <h4
+          class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-1"
+        >
+          SLA Breach Ratio
+        </h4>
+        <p class="text-3xl font-extrabold text-rose-650 dark:text-rose-400">
+          {{ reportsData.sla_breaches }} breaches
+        </p>
       </div>
     </div>
 
@@ -207,30 +526,96 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- User Pendency Breakdown -->
       <div class="app-card">
-        <h3 class="text-base font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-amber-500"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <h3
+          class="text-base font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="w-4 h-4 text-amber-500"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
           Pendency Breakdown by Holder
         </h3>
         <div class="space-y-3">
-          <div *ngIf="!reportsData.user_pendency || reportsData.user_pendency.length === 0" class="text-xs text-[var(--text-muted)] italic">No pending documents.</div>
-          <div *ngFor="let p of reportsData.user_pendency" class="flex justify-between items-center p-3 bg-[var(--background)] border border-[var(--border)] rounded-md">
-            <span class="text-xs font-semibold text-[var(--text-primary)]">{{ p.username }} ({{ p.role }})</span>
-            <span class="px-2.5 py-0.5 text-xs font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 rounded border border-blue-150 dark:border-blue-900/30">{{ p.pending_count }} files</span>
+          <div
+            *ngIf="
+              !reportsData.user_pendency ||
+              reportsData.user_pendency.length === 0
+            "
+            class="text-xs text-[var(--text-muted)] italic"
+          >
+            No pending documents.
+          </div>
+          <div
+            *ngFor="let p of reportsData.user_pendency"
+            class="flex justify-between items-center p-3 bg-[var(--background)] border border-[var(--border)] rounded-md"
+          >
+            <span class="text-xs font-semibold text-[var(--text-primary)]"
+              >{{ p.username }} ({{ p.role }})</span
+            >
+            <span
+              class="px-2.5 py-0.5 text-xs font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 rounded border border-blue-150 dark:border-blue-900/30"
+              >{{ p.pending_count }} files</span
+            >
           </div>
         </div>
       </div>
 
       <!-- SLA Status Distribution -->
       <div class="app-card">
-        <h3 class="text-base font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-emerald-500"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        <h3
+          class="text-base font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="w-4 h-4 text-emerald-500"
+          >
+            <path
+              d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
+            />
+            <path d="m9 12 2 2 4-4" />
+          </svg>
           Category Workloads
         </h3>
         <div class="space-y-3">
-          <div *ngIf="!reportsData.category_workloads || reportsData.category_workloads.length === 0" class="text-xs text-[var(--text-muted)] italic">No workloads recorded.</div>
-          <div *ngFor="let c of reportsData.category_workloads" class="flex justify-between items-center p-3 bg-[var(--background)] border border-[var(--border)] rounded-md">
-            <span class="text-xs font-semibold text-[var(--text-primary)]">{{ c.category }}</span>
-            <span class="px-2.5 py-0.5 text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded border border-emerald-150 dark:border-emerald-900/30">{{ c.count }} files</span>
+          <div
+            *ngIf="
+              !reportsData.category_workloads ||
+              reportsData.category_workloads.length === 0
+            "
+            class="text-xs text-[var(--text-muted)] italic"
+          >
+            No workloads recorded.
+          </div>
+          <div
+            *ngFor="let c of reportsData.category_workloads"
+            class="flex justify-between items-center p-3 bg-[var(--background)] border border-[var(--border)] rounded-md"
+          >
+            <span class="text-xs font-semibold text-[var(--text-primary)]">{{
+              c.category
+            }}</span>
+            <span
+              class="px-2.5 py-0.5 text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded border border-emerald-150 dark:border-emerald-900/30"
+              >{{ c.count }} files</span
+            >
           </div>
         </div>
       </div>

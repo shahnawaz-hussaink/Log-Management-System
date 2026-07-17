@@ -1,30 +1,17 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiService {
-  private apiUrl = environment.apiUrl;
-  
+  private apiUrl = 'http://localhost:8080/api';
+
   public searchSubject = new BehaviorSubject<string>('');
   public activeTabSubject = new BehaviorSubject<string>('pending_me');
 
   constructor(private http: HttpClient) {}
-
-  downloadDocumentFile(id: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/documents/${id}/download`, { responseType: 'blob' });
-  }
-
-  previewDocumentFile(id: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/documents/${id}/preview-pdf`, { responseType: 'blob' });
-  }
-
-  downloadAttachmentFile(id: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/attachments/${id}/download`, { responseType: 'blob' });
-  }
 
   getUsers() {
     return this.http.get<any[]>(`${this.apiUrl}/users`);
@@ -55,35 +42,53 @@ export class ApiService {
   }
 
   replaceDocument(id: string, formData: FormData) {
-    return this.http.put<any>(`${this.apiUrl}/documents/${id}/replace`, formData);
+    return this.http.put<any>(
+      `${this.apiUrl}/documents/${id}/replace`,
+      formData,
+    );
   }
 
   submitAction(id: string, actionData: any) {
-    return this.http.post<any>(`${this.apiUrl}/documents/${id}/action`, actionData);
+    return this.http.post<any>(
+      `${this.apiUrl}/documents/${id}/action`,
+      actionData,
+    );
   }
 
   login(email: string, password?: string) {
-    return this.http.post<any>(`${this.apiUrl}/auth/login`, { email, password });
+    return this.http.post<any>(`${this.apiUrl}/auth/login`, {
+      email,
+      password,
+    });
   }
 
   signup(name: string, email: string, password?: string) {
-    return this.http.post<any>(`${this.apiUrl}/auth/signup`, { name, email, password });
+    return this.http.post<any>(`${this.apiUrl}/auth/signup`, {
+      name,
+      email,
+      password,
+    });
   }
 
-
-
   appendNote(id: string, note: string) {
-    return this.http.post<any>(`${this.apiUrl}/documents/${id}/notes`, { note });
+    return this.http.post<any>(`${this.apiUrl}/documents/${id}/notes`, {
+      note,
+    });
   }
 
   saveDraft(id: string, draft: string) {
-    return this.http.put<any>(`${this.apiUrl}/documents/${id}/draft`, { draft });
+    return this.http.put<any>(`${this.apiUrl}/documents/${id}/draft`, {
+      draft,
+    });
   }
 
   addAttachment(id: string, file: File) {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<any>(`${this.apiUrl}/documents/${id}/attachments`, formData);
+    return this.http.post<any>(
+      `${this.apiUrl}/documents/${id}/attachments`,
+      formData,
+    );
   }
 
   getNotifications() {
@@ -99,7 +104,11 @@ export class ApiService {
   }
 
   sendManualEmail(to: string, subject: string, body: string) {
-    return this.http.post<any>(`${this.apiUrl}/send-email`, { to, subject, body });
+    return this.http.post<any>(`${this.apiUrl}/send-email`, {
+      to,
+      subject,
+      body,
+    });
   }
 
   // ── Admin API ──────────────────────────────────────────────────────────────
@@ -133,7 +142,10 @@ export class ApiService {
   }
 
   adminUpdateDocumentType(id: string, data: any) {
-    return this.http.put<any>(`${this.apiUrl}/admin/document-types/${id}`, data);
+    return this.http.put<any>(
+      `${this.apiUrl}/admin/document-types/${id}`,
+      data,
+    );
   }
 
   adminDeleteDocumentType(id: string) {
@@ -152,4 +164,3 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/documents/${docId}/recall`, {});
   }
 }
-
