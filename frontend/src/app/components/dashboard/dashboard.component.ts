@@ -76,9 +76,22 @@ export class DashboardComponent implements OnInit {
 
     // Subscribe to folder parameters from global sidebar
     this.route.queryParams.subscribe(params => {
+      if (params['mode']) {
+        const newMode = params['mode'] as 'receipts' | 'files';
+        if (this.viewMode !== newMode) {
+          this.viewMode = newMode;
+          this.activeTab = 'all_files';
+          this.selectedPriority = 'All';
+        }
+      }
       if (params['folder']) {
         this.selectedFolder = params['folder'];
-        this.applyFilter();
+      }
+      this.applyFilter();
+      if (this.viewMode === 'receipts') {
+        this.loadDocuments();
+      } else {
+        this.loadFiles();
       }
     });
     

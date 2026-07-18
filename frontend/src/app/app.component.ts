@@ -37,6 +37,7 @@ export class AppComponent implements OnInit, OnDestroy {
   activeAdminSection: string = 'overview';
   documentTypes: any[] = [];
   selectedFolder: string = 'All';
+  viewMode: string = 'receipts';
 
   constructor(
     public authService: AuthService,
@@ -61,6 +62,17 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.api.searchSubject.subscribe(q => {
       this.searchQuery = q;
+    });
+
+    this.router.events.subscribe(() => {
+      const url = this.router.url;
+      if (url.includes('mode=files')) {
+        this.viewMode = 'files';
+      } else if (url.includes('mode=receipts')) {
+        this.viewMode = 'receipts';
+      } else {
+        this.viewMode = 'receipts';
+      }
     });
   }
 
@@ -233,8 +245,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
   navigateToDashboard() {
     this.selectedFolder = 'All';
+    this.viewMode = 'receipts';
     this.api.activeTabSubject.next('all_files');
-    this.router.navigate(['/dashboard'], { queryParams: { folder: 'All' } });
+    this.router.navigate(['/dashboard'], { queryParams: { folder: 'All', mode: 'receipts' } });
+  }
+
+  navigateToMode(mode: 'receipts' | 'files') {
+    this.selectedFolder = 'All';
+    this.viewMode = mode;
+    this.api.activeTabSubject.next('all_files');
+    this.router.navigate(['/dashboard'], { queryParams: { folder: 'All', mode: mode } });
   }
 
   navigateToAdminSection(section: string) {
