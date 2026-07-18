@@ -7,6 +7,7 @@ import { CreateFileComponent } from './components/create-file/create-file.compon
 import { DetailsComponent } from './components/details/details.component';
 import { AdminComponent } from './components/admin/admin.component';
 import { HistoryComponent } from './components/history/history.component';
+import { ProfileComponent } from './components/profile/profile.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { authGuard } from './auth.guard';
 import { guestGuard } from './guest.guard';
@@ -21,9 +22,9 @@ export const routes: Routes = [
   { path: 'create-file',component: CreateFileComponent,canActivate: [authGuard] },
   { path: 'history',    component: HistoryComponent,   canActivate: [authGuard] },
   { path: 'details/:id',component: DetailsComponent,   canActivate: [authGuard] },
+  { path: 'profile',    component: ProfileComponent,   canActivate: [authGuard] },
   // Admin route
   { path: 'admin',      component: AdminComponent,     canActivate: [authGuard, adminGuard] },
   // Wildcard 404 Route
   { path: '**',         component: NotFoundComponent }
 ];
-

@@ -76,7 +76,7 @@ func main() {
 
 	// Handlers
 	authHandler := auth.NewHandler(authService)
-	userHandler := user.NewHandler(userService)
+	userHandler := user.NewHandler(userService, database)
 	docHandler := document.NewHandler(docService)
 	adminHandler := admin.NewHandler(adminService)
 

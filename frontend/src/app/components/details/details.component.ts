@@ -52,6 +52,7 @@ export class DetailsComponent implements OnInit {
   safePdfUrl: SafeResourceUrl | null = null;
   showForwardSelect: boolean = false;
   loading: boolean = false;
+  activeDetailTab: 'workspace' | 'activity' = 'workspace';
 
   constructor(
     private route: ActivatedRoute,

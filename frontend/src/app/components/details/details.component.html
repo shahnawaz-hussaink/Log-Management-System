@@ -177,7 +177,10 @@
                     [value]="user.id || user.ID"
                     class="bg-white text-slate-800"
                   >
-                    {{ user.name || user.Name }} - {{ user.role || user.Role }} ({{ user.email || user.Email }})
+                    {{ user.name || user.Name }} -
+                    {{ user.role || user.Role }} ({{
+                      user.email || user.Email
+                    }})
                   </option>
                 </select>
                 <button
@@ -381,7 +384,8 @@
                   [value]="user.id || user.ID"
                   class="bg-white text-slate-800"
                 >
-                  {{ user.name || user.Name }} - {{ user.role || user.Role }} ({{ user.email || user.Email }})
+                  {{ user.name || user.Name }} -
+                  {{ user.role || user.Role }} ({{ user.email || user.Email }})
                 </option>
               </select>
             </div>
@@ -426,49 +430,114 @@
           </div>
         </div>
         <!-- Student Assignment Submission Panel -->
-        <div *ngIf="document.Category === 'Assignment Broadcast' && (currentUser.Role === 'Student' || currentUser.role === 'Student')">
-          <hr class="border-[var(--border)] my-6">
-          <h3 class="text-lg font-bold text-[var(--text-primary)]">Submit Assignment Response</h3>
-          <p class="text-[var(--text-secondary)] text-sm mb-5">Upload your assignment submission here.</p>
+        <div
+          *ngIf="
+            document.Category === 'Assignment Broadcast' &&
+            (currentUser.Role === 'Student' || currentUser.role === 'Student')
+          "
+        >
+          <hr class="border-[var(--border)] my-6" />
+          <h3 class="text-lg font-bold text-[var(--text-primary)]">
+            Submit Assignment Response
+          </h3>
+          <p class="text-[var(--text-secondary)] text-sm mb-5">
+            Upload your assignment submission here.
+          </p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Select File (Required)</label>
-              <input type="file" class="app-input file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-[var(--primary)] file:cursor-pointer p-1.5" (change)="onFileSelected($event)">
+              <label
+                class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5"
+                >Select File (Required)</label
+              >
+              <input
+                type="file"
+                class="app-input file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-[var(--primary)] file:cursor-pointer p-1.5"
+                (change)="onFileSelected($event)"
+              />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Remarks / Notes (Optional)</label>
-              <textarea class="app-input" rows="2" [(ngModel)]="replaceRemarks" placeholder=""></textarea>
+              <label
+                class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5"
+                >Remarks / Notes (Optional)</label
+              >
+              <textarea
+                class="app-input"
+                rows="2"
+                [(ngModel)]="replaceRemarks"
+                placeholder=""
+              ></textarea>
             </div>
           </div>
-          <div *ngIf="replaceError" class="text-rose-600 mb-4 text-sm p-3 bg-rose-50 border border-rose-100 rounded-xl">{{ replaceError }}</div>
-          <button class="app-btn-primary cursor-pointer font-semibold" (click)="submitResponse()" [disabled]="loading">
+          <div
+            *ngIf="replaceError"
+            class="text-rose-600 mb-4 text-sm p-3 bg-rose-50 border border-rose-100 rounded-xl"
+          >
+            {{ replaceError }}
+          </div>
+          <button
+            class="app-btn-primary cursor-pointer font-semibold"
+            (click)="submitResponse()"
+            [disabled]="loading"
+          >
             <span *ngIf="!loading">Submit Response</span>
             <span *ngIf="loading">Submitting...</span>
           </button>
         </div>
 
         <!-- Teacher View Submissions Panel -->
-        <div *ngIf="document.Category === 'Assignment Broadcast' && (currentUser.Role === 'Teacher' || currentUser.role === 'Teacher' || currentUser.Role === 'Principal' || currentUser.role === 'Principal')">
-          <hr class="border-[var(--border)] my-6">
-          <h3 class="text-lg font-bold text-[var(--text-primary)] mb-4">Student Submissions ({{ submissions.length }})</h3>
-          
-          <div *ngIf="submissions.length === 0" class="p-6 bg-slate-50 border border-slate-200 rounded-xl text-center">
-            <p class="text-sm text-slate-500 font-medium">No submissions received yet.</p>
+        <div
+          *ngIf="
+            document.Category === 'Assignment Broadcast' &&
+            (currentUser.Role === 'Teacher' ||
+              currentUser.role === 'Teacher' ||
+              currentUser.Role === 'Principal' ||
+              currentUser.role === 'Principal')
+          "
+        >
+          <hr class="border-[var(--border)] my-6" />
+          <h3 class="text-lg font-bold text-[var(--text-primary)] mb-4">
+            Student Submissions ({{ submissions.length }})
+          </h3>
+
+          <div
+            *ngIf="submissions.length === 0"
+            class="p-6 bg-slate-50 border border-slate-200 rounded-xl text-center"
+          >
+            <p class="text-sm text-slate-500 font-medium">
+              No submissions received yet.
+            </p>
           </div>
 
           <div *ngIf="submissions.length > 0" class="flex flex-col gap-3">
-            <div *ngFor="let sub of submissions" class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white border border-slate-200 rounded-xl hover:border-[var(--primary)] transition-colors shadow-xs">
+            <div
+              *ngFor="let sub of submissions"
+              class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-white border border-slate-200 rounded-xl hover:border-[var(--primary)] transition-colors shadow-xs"
+            >
               <div class="mb-3 sm:mb-0">
                 <p class="text-sm font-bold text-slate-800">{{ sub.Title }}</p>
-                <p class="text-xs text-slate-500 mt-1">Submitted by: <strong class="text-slate-700">{{ sub.Uploader?.name || sub.Uploader?.Name || 'Unknown Student' }}</strong> on {{ sub.CreatedAt | date:'short' }}</p>
-                <p class="text-xs text-slate-500 mt-0.5">Class: {{ sub.TargetClass || 'N/A' }}</p>
+                <p class="text-xs text-slate-500 mt-1">
+                  Submitted by:
+                  <strong class="text-slate-700">{{
+                    sub.Uploader?.name ||
+                      sub.Uploader?.Name ||
+                      "Unknown Student"
+                  }}</strong>
+                  on {{ sub.CreatedAt | date: "short" }}
+                </p>
+                <p class="text-xs text-slate-500 mt-0.5">
+                  Class: {{ sub.TargetClass || "N/A" }}
+                </p>
               </div>
-              <button class="app-btn-secondary text-sm !py-1.5" (click)="router.navigate(['/document', sub.ID])">View Submission</button>
+              <button
+                class="app-btn-secondary text-sm !py-1.5"
+                (click)="router.navigate(['/document', sub.ID])"
+              >
+                View Submission
+              </button>
             </div>
           </div>
         </div>
-
       </div>
 
       <!-- Sidebar: Workflow History -->
@@ -502,10 +571,14 @@
                 </div>
                 <div class="text-xs text-[var(--text-secondary)] mb-2">
                   From
-                  <strong class="text-[var(--text-primary)] font-medium">{{ item.Actor.Name }}</strong>
+                  <strong class="text-[var(--text-primary)] font-medium">{{
+                    item.Actor.Name
+                  }}</strong>
                   <span *ngIf="item.Target">
                     &rarr; To
-                    <strong class="text-[var(--text-primary)] font-medium">{{ item.Target.Name }}</strong>
+                    <strong class="text-[var(--text-primary)] font-medium">{{
+                      item.Target.Name
+                    }}</strong>
                   </span>
                 </div>
                 <div class="text-[10px] text-[var(--text-muted)]">
@@ -520,29 +593,116 @@
   </ng-container>
 
   <ng-container *ngIf="!loading && isFileType && file">
-    <!-- Back to Dashboard -->
-    <div class="flex justify-between items-center mb-6">
+    <!-- Back + Tab Bar Row -->
+    <div
+      class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6"
+    >
       <button
-        class="app-btn-secondary cursor-pointer"
+        class="app-btn-secondary cursor-pointer self-start"
         (click)="router.navigate(['/dashboard'])"
       >
         &larr; Back to Dashboard
       </button>
+
+      <!-- Workspace / Activity Tabs -->
+      <div
+        class="flex items-center gap-1 bg-[var(--surface)] border border-[var(--border)]/30 rounded-xl p-1 self-start sm:self-auto shadow-sm"
+      >
+        <button
+          class="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer border-0"
+          [ngClass]="{
+            'bg-[var(--primary)] text-white shadow-sm':
+              activeDetailTab === 'workspace',
+            'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]':
+              activeDetailTab !== 'workspace',
+          }"
+          (click)="activeDetailTab = 'workspace'"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect width="7" height="9" x="3" y="3" rx="1" />
+            <rect width="7" height="5" x="14" y="3" rx="1" />
+            <rect width="7" height="9" x="14" y="12" rx="1" />
+            <rect width="7" height="5" x="3" y="16" rx="1" />
+          </svg>
+          Workspace
+        </button>
+        <button
+          class="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer border-0"
+          [ngClass]="{
+            'bg-[var(--primary)] text-white shadow-sm':
+              activeDetailTab === 'activity',
+            'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)]':
+              activeDetailTab !== 'activity',
+          }"
+          (click)="activeDetailTab = 'activity'"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
+            />
+          </svg>
+          Activity
+          <span
+            *ngIf="history && history.length > 0"
+            class="inline-flex items-center justify-center w-4 h-4 text-[10px] font-black rounded-full"
+            [ngClass]="{
+              'bg-white/20 text-white': activeDetailTab === 'activity',
+              'bg-[var(--primary)]/10 text-[var(--primary)]':
+                activeDetailTab !== 'activity',
+            }"
+            >{{ history.length }}</span
+          >
+        </button>
+      </div>
     </div>
 
-    <!-- Dual Pane e-Office Workspace -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 items-stretch min-h-[75vh]">
+    <!-- WORKSPACE TAB -->
+    <div
+      *ngIf="activeDetailTab === 'workspace'"
+      class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch min-h-[75vh]"
+    >
       <!-- Left Pane: Attached Receipts / Document Preview -->
-      <div class="flex flex-col border border-[var(--border)] rounded-xl bg-[var(--surface)] overflow-hidden">
+      <div
+        class="flex flex-col border border-[var(--border)] rounded-xl bg-[var(--surface)] overflow-hidden"
+      >
         <!-- Receipts List Header / Switcher -->
-        <div class="p-4 border-b border-[var(--border)] bg-[var(--background)] flex justify-between items-center">
+        <div
+          class="p-4 border-b border-[var(--border)] bg-[var(--background)] flex justify-between items-center"
+        >
           <div>
-            <h3 class="text-sm font-bold text-[var(--text-primary)]">Attached Receipts (Inward)</h3>
-            <p class="text-[10px] text-[var(--text-muted)]">Select a receipt below to preview its document contents.</p>
+            <h3 class="text-sm font-bold text-[var(--text-primary)]">
+              Attached Receipts (Inward)
+            </h3>
+            <p class="text-[10px] text-[var(--text-muted)]">
+              Select a receipt below to preview its document contents.
+            </p>
           </div>
           <!-- Attach Receipt Action (Only if file is Open/In Review and owned by current user) -->
           <button
-            *ngIf="(file.Status === 'Open' || file.Status === 'In Review') && file.CurrentOwnerID === currentUser.ID"
+            *ngIf="
+              (file.Status === 'Open' || file.Status === 'In Review') &&
+              file.CurrentOwnerID === currentUser.ID
+            "
             class="app-btn-primary !py-1 px-2.5 text-[10.5px] font-bold border-0 bg-blue-600 hover:bg-blue-700 text-white rounded cursor-pointer"
             (click)="openAttachReceiptModal()"
           >
@@ -551,16 +711,23 @@
         </div>
 
         <!-- Attached Receipts Tabs / Navigation -->
-        <div class="flex border-b border-[var(--border)]/10 overflow-x-auto bg-slate-50 dark:bg-slate-900/20 px-2 py-1.5 gap-1.5">
-          <div *ngIf="!file.Receipts || file.Receipts.length === 0" class="text-xs text-[var(--text-muted)] italic px-2 py-1">
+        <div
+          class="flex border-b border-[var(--border)]/10 overflow-x-auto bg-slate-50 dark:bg-slate-900/20 px-2 py-1.5 gap-1.5"
+        >
+          <div
+            *ngIf="!file.Receipts || file.Receipts.length === 0"
+            class="text-xs text-[var(--text-muted)] italic px-2 py-1"
+          >
             No receipts attached to this file yet.
           </div>
           <button
             *ngFor="let receipt of file.Receipts"
             class="px-3 py-1 text-xs font-semibold rounded border cursor-pointer transition-all shrink-0"
             [ngClass]="{
-              'bg-blue-600 text-white border-blue-600': selectedReceiptID === receipt.ID,
-              'bg-transparent text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--background)]': selectedReceiptID !== receipt.ID
+              'bg-blue-600 text-white border-blue-600':
+                selectedReceiptID === receipt.ID,
+              'bg-transparent text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--background)]':
+                selectedReceiptID !== receipt.ID,
             }"
             (click)="selectReceipt(receipt)"
           >
@@ -569,25 +736,54 @@
         </div>
 
         <!-- Selected Receipt Viewer -->
-        <div class="flex-1 min-h-[400px] flex flex-col relative bg-slate-100 dark:bg-slate-950/20">
-          <div *ngIf="!selectedReceipt" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-[var(--text-muted)]">
-            <svg class="w-16 h-16 text-[var(--text-muted)]/40 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+        <div
+          class="flex-1 min-h-[400px] flex flex-col relative bg-slate-100 dark:bg-slate-950/20"
+        >
+          <div
+            *ngIf="!selectedReceipt"
+            class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-[var(--text-muted)]"
+          >
+            <svg
+              class="w-16 h-16 text-[var(--text-muted)]/40 mb-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+              />
             </svg>
             <p class="text-sm font-semibold">No receipt selected</p>
-            <p class="text-xs max-w-xs mt-1">Please select an attached receipt from the tabs above to view its contents.</p>
+            <p class="text-xs max-w-xs mt-1">
+              Please select an attached receipt from the tabs above to view its
+              contents.
+            </p>
           </div>
 
           <ng-container *ngIf="selectedReceipt">
             <!-- Receipt Header Info -->
-            <div class="p-3 bg-[var(--background)] border-b border-[var(--border)] flex justify-between items-center text-xs">
+            <div
+              class="p-3 bg-[var(--background)] border-b border-[var(--border)] flex justify-between items-center text-xs"
+            >
               <div>
-                <strong class="text-[var(--text-primary)] font-semibold">{{ selectedReceipt.Title }}</strong>
-                <span class="text-[10px] text-[var(--text-muted)] ml-2">Uploader: {{ selectedReceipt.Uploader?.Name }}</span>
+                <strong class="text-[var(--text-primary)] font-semibold">{{
+                  selectedReceipt.Title
+                }}</strong>
+                <span class="text-[10px] text-[var(--text-muted)] ml-2"
+                  >Uploader: {{ selectedReceipt.Uploader?.Name }}</span
+                >
               </div>
               <a
                 *ngIf="selectedReceipt.FilePath"
-                [href]="'http://localhost:8080/api/documents/' + selectedReceipt.ID + '/download?token=' + auth.getToken()"
+                [href]="
+                  'http://localhost:8080/api/documents/' +
+                  selectedReceipt.ID +
+                  '/download?token=' +
+                  auth.getToken()
+                "
                 target="_blank"
                 class="text-blue-600 hover:text-blue-700 font-bold"
               >
@@ -602,8 +798,13 @@
                 [src]="safePdfUrl"
                 class="absolute inset-0 w-full h-full border-0"
               ></iframe>
-              <div *ngIf="!safePdfUrl" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-[var(--text-muted)] bg-slate-50">
-                <p class="text-xs">No PDF preview available for this document file format.</p>
+              <div
+                *ngIf="!safePdfUrl"
+                class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center text-[var(--text-muted)] bg-slate-50"
+              >
+                <p class="text-xs">
+                  No PDF preview available for this document file format.
+                </p>
               </div>
             </div>
           </ng-container>
@@ -611,24 +812,38 @@
       </div>
 
       <!-- Right Pane: Noting Sheets -->
-      <div class="flex flex-col border border-[var(--border)] rounded-xl bg-[var(--surface)] overflow-hidden">
+      <div
+        class="flex flex-col border border-[var(--border)] rounded-xl bg-[var(--surface)] overflow-hidden"
+      >
         <!-- Noting Sheet Header -->
-        <div class="p-4 border-b border-[var(--border)] bg-[var(--background)] flex justify-between items-center">
+        <div
+          class="p-4 border-b border-[var(--border)] bg-[var(--background)] flex justify-between items-center"
+        >
           <div>
-            <h3 class="text-sm font-bold text-[var(--text-primary)]">Noting Sheet Logs</h3>
-            <p class="text-[10px] text-[var(--text-muted)]">Official chronological remarks and decision trail.</p>
+            <h3 class="text-sm font-bold text-[var(--text-primary)]">
+              Noting Sheet Logs
+            </h3>
+            <p class="text-[10px] text-[var(--text-muted)]">
+              Official chronological remarks and decision trail.
+            </p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-xs px-2.5 py-0.5 rounded font-bold uppercase border bg-slate-100 text-slate-700 border-slate-200">
+            <span
+              class="text-xs px-2.5 py-0.5 rounded font-bold uppercase border bg-slate-100 text-slate-700 border-slate-200"
+            >
               {{ file.FileNumber }}
             </span>
             <span
               class="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border"
               [ngClass]="{
-                'bg-emerald-50 text-emerald-700 border-emerald-200': file.Status === 'Open',
-                'bg-amber-50 text-amber-700 border-amber-200': file.Status === 'In Review',
-                'bg-slate-100 text-slate-700 border-slate-300': file.Status === 'Closed',
-                'bg-blue-50 text-blue-700 border-blue-200': file.Status === 'Archived'
+                'bg-emerald-50 text-emerald-700 border-emerald-200':
+                  file.Status === 'Open',
+                'bg-amber-50 text-amber-700 border-amber-200':
+                  file.Status === 'In Review',
+                'bg-slate-100 text-slate-700 border-slate-300':
+                  file.Status === 'Closed',
+                'bg-blue-50 text-blue-700 border-blue-200':
+                  file.Status === 'Archived',
               }"
             >
               {{ file.Status }}
@@ -637,8 +852,13 @@
         </div>
 
         <!-- Notes Scroll Area -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 dark:bg-slate-900/10 max-h-[500px]">
-          <div *ngIf="!notes || notes.length === 0" class="text-center py-12 text-[var(--text-muted)] italic">
+        <div
+          class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 dark:bg-slate-900/10 max-h-[500px]"
+        >
+          <div
+            *ngIf="!notes || notes.length === 0"
+            class="text-center py-12 text-[var(--text-muted)] italic"
+          >
             Noting sheet is empty. Add a Yellow Note draft to collaborate.
           </div>
 
@@ -647,9 +867,12 @@
             *ngFor="let note of notes"
             class="p-4 border rounded-xl relative shadow-2xs transition-all"
             [ngClass]="{
-              'bg-emerald-50/30 border-emerald-200 dark:border-emerald-900/30': note.Type === 'Green',
-              'bg-yellow-50/30 border-yellow-250 dark:border-yellow-900/30': note.Type === 'Yellow' && !note.IsDiscarded,
-              'bg-slate-100/50 border-slate-200 opacity-60 line-through': note.IsDiscarded
+              'bg-emerald-50/30 border-emerald-200 dark:border-emerald-900/30':
+                note.Type === 'Green',
+              'bg-yellow-50/30 border-yellow-250 dark:border-yellow-900/30':
+                note.Type === 'Yellow' && !note.IsDiscarded,
+              'bg-slate-100/50 border-slate-200 opacity-60 line-through':
+                note.IsDiscarded,
             }"
           >
             <div class="flex justify-between items-start mb-2.5">
@@ -657,23 +880,29 @@
                 <span
                   class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border"
                   [ngClass]="{
-                    'bg-emerald-600 text-white border-emerald-600': note.Type === 'Green',
-                    'bg-yellow-500 text-slate-950 border-yellow-500': note.Type === 'Yellow' && !note.IsDiscarded,
-                    'bg-slate-400 text-white border-slate-400': note.IsDiscarded
+                    'bg-emerald-600 text-white border-emerald-600':
+                      note.Type === 'Green',
+                    'bg-yellow-500 text-slate-950 border-yellow-500':
+                      note.Type === 'Yellow' && !note.IsDiscarded,
+                    'bg-slate-400 text-white border-slate-400':
+                      note.IsDiscarded,
                   }"
                 >
-                  {{ note.Type }} Note {{ note.IsDiscarded ? '(Discarded Draft)' : '' }}
+                  {{ note.Type }} Note
+                  {{ note.IsDiscarded ? "(Discarded Draft)" : "" }}
                 </span>
-
               </div>
               <span class="text-[10px] text-[var(--text-muted)]">
-                {{ note.CreatedAt | date: 'short' }}
+                {{ note.CreatedAt | date: "short" }}
               </span>
             </div>
 
             <!-- Note Content -->
             <div *ngIf="!note.isEditing">
-              <div class="text-sm text-[var(--text-primary)] leading-relaxed font-sans" [innerHTML]="renderMarkdown(note.Content)"></div>
+              <div
+                class="text-sm text-[var(--text-primary)] leading-relaxed font-sans"
+                [innerHTML]="renderMarkdown(note.Content)"
+              ></div>
             </div>
 
             <!-- Inline Edit Area for Yellow Notes -->
@@ -684,41 +913,79 @@
                 [(ngModel)]="note.editText"
               ></textarea>
               <div class="flex gap-2 justify-end">
-                <button class="px-2.5 py-1 text-xs bg-slate-200 text-slate-800 hover:bg-slate-300 border-0 rounded cursor-pointer" (click)="note.isEditing=false">Cancel</button>
-                <button class="px-2.5 py-1 text-xs bg-yellow-500 text-slate-950 hover:bg-yellow-600 font-semibold border-0 rounded cursor-pointer" (click)="saveInlineNote(note)">Save Changes</button>
+                <button
+                  class="px-2.5 py-1 text-xs bg-slate-200 text-slate-800 hover:bg-slate-300 border-0 rounded cursor-pointer"
+                  (click)="note.isEditing = false"
+                >
+                  Cancel
+                </button>
+                <button
+                  class="px-2.5 py-1 text-xs bg-yellow-500 text-slate-950 hover:bg-yellow-600 font-semibold border-0 rounded cursor-pointer"
+                  (click)="saveInlineNote(note)"
+                >
+                  Save Changes
+                </button>
               </div>
             </div>
 
             <!-- Digital Seal/Token for Green Notes -->
-            <div *ngIf="note.Type === 'Green'" class="mt-3 border-t border-emerald-100 dark:border-emerald-950/40 pt-2.5 flex flex-col gap-2">
+            <div
+              *ngIf="note.Type === 'Green'"
+              class="mt-3 border-t border-emerald-100 dark:border-emerald-950/40 pt-2.5 flex flex-col gap-2"
+            >
               <div class="flex flex-col gap-0.5">
-                <span class="text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                  {{ note.Author?.Name || note.Author?.name || 'Unknown User' }}
+                <span
+                  class="text-xs font-bold text-emerald-800 dark:text-emerald-300"
+                >
+                  {{ note.Author?.Name || note.Author?.name || "Unknown User" }}
                 </span>
-                <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-                  {{ note.Author?.Role || note.Author?.role || 'Unknown Designation' }}
+                <span
+                  class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider"
+                >
+                  {{
+                    note.Author?.Role ||
+                      note.Author?.role ||
+                      "Unknown Designation"
+                  }}
                   &nbsp;•&nbsp;
-                  {{ note.Author?.School?.Name || note.Author?.SchoolName || 'DHE' }}
+                  {{
+                    note.Author?.School?.Name ||
+                      note.Author?.SchoolName ||
+                      "DHE"
+                  }}
                 </span>
               </div>
               <div *ngIf="note.Signature">
-                <span class="block text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">
+                <span
+                  class="block text-[8px] font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1"
+                >
                   Digital Token Stamp (Non-Repudiation):
                 </span>
-                <span class="inline-block self-start px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-250 font-mono rounded text-[10px] font-bold shadow-3xs">
+                <span
+                  class="inline-block self-start px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-250 font-mono rounded text-[10px] font-bold shadow-3xs"
+                >
                   🔒 {{ note.Signature }}
                 </span>
               </div>
             </div>
 
             <!-- Discarded audit trace indicator -->
-            <div *ngIf="note.IsDiscarded" class="mt-2 text-[10px] text-slate-500 italic">
-              Archived for history audit trail: superseded by published Green Note.
+            <div
+              *ngIf="note.IsDiscarded"
+              class="mt-2 text-[10px] text-slate-500 italic"
+            >
+              Archived for history audit trail: superseded by published Green
+              Note.
             </div>
 
             <!-- Publish / Edit Yellow Note Action Buttons -->
             <div
-              *ngIf="note.Type === 'Yellow' && !note.IsDiscarded && file.CurrentOwnerID === currentUser.ID && (file.Status === 'Open' || file.Status === 'In Review')"
+              *ngIf="
+                note.Type === 'Yellow' &&
+                !note.IsDiscarded &&
+                file.CurrentOwnerID === currentUser.ID &&
+                (file.Status === 'Open' || file.Status === 'In Review')
+              "
               class="mt-3.5 flex justify-end gap-2 border-t border-yellow-100 pt-2.5"
             >
               <button
@@ -741,12 +1008,19 @@
 
         <!-- Noting Input Area (Only if file is Open/In Review and owned by the current user) -->
         <div
-          *ngIf="(file.Status === 'Open' || file.Status === 'In Review') && file.CurrentOwnerID === currentUser.ID"
+          *ngIf="
+            (file.Status === 'Open' || file.Status === 'In Review') &&
+            file.CurrentOwnerID === currentUser.ID
+          "
           class="p-4 border-t border-[var(--border)] bg-[var(--background)] space-y-3"
         >
-          <div *ngIf="noteError" class="alert alert-error text-xs">{{ noteError }}</div>
+          <div *ngIf="noteError" class="alert alert-error text-xs">
+            {{ noteError }}
+          </div>
           <div>
-            <label class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+            <label
+              class="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1"
+            >
               Add Collaborative Yellow Note Draft
             </label>
             <textarea
@@ -758,7 +1032,8 @@
           </div>
           <div class="flex justify-between items-center flex-wrap gap-2">
             <span class="text-[10px] text-[var(--text-muted)] italic">
-              * Yellow Notes can be edited until published as immutable Green Notes.
+              * Yellow Notes can be edited until published as immutable Green
+              Notes.
             </span>
             <button
               class="app-btn-primary cursor-pointer border-0 py-1.5 px-4 font-bold bg-yellow-500 hover:bg-yellow-600 text-slate-950 text-xs rounded"
@@ -771,7 +1046,10 @@
 
         <!-- File Action/Routing Footer (Only if file is Open/In Review and owned by the current user) -->
         <div
-          *ngIf="(file.Status === 'Open' || file.Status === 'In Review') && file.CurrentOwnerID === currentUser.ID"
+          *ngIf="
+            (file.Status === 'Open' || file.Status === 'In Review') &&
+            file.CurrentOwnerID === currentUser.ID
+          "
           class="p-4 border-t border-[var(--border)] bg-slate-50/50 dark:bg-slate-900/5 flex justify-between items-center gap-4 flex-wrap"
         >
           <button
@@ -780,7 +1058,7 @@
           >
             Forward File ad-hoc
           </button>
-          
+
           <div class="flex gap-2 ml-auto">
             <button
               class="app-btn-secondary !py-2 !px-4 text-xs font-bold border border-slate-300 bg-slate-600 text-white hover:bg-slate-700 rounded cursor-pointer"
@@ -798,62 +1076,186 @@
         </div>
 
         <!-- Forward Destination Selector -->
-        <div *ngIf="showForwardSelect" class="p-4 border-t border-[var(--border)] bg-[var(--surface)] space-y-3">
+        <div
+          *ngIf="showForwardSelect"
+          class="p-4 border-t border-[var(--border)] bg-[var(--surface)] space-y-3"
+        >
           <div class="form-group">
-            <label for="fwd-user" class="block text-xs font-semibold text-[var(--text-secondary)] uppercase mb-1">Select Destination User *</label>
-            <select id="fwd-user" class="w-full p-2 border border-[var(--border)] rounded-md text-sm" [(ngModel)]="selectedUser">
+            <label
+              for="fwd-user"
+              class="block text-xs font-semibold text-[var(--text-secondary)] uppercase mb-1"
+              >Select Destination User *</label
+            >
+            <select
+              id="fwd-user"
+              class="w-full p-2 border border-[var(--border)] rounded-md text-sm"
+              [(ngModel)]="selectedUser"
+            >
               <option *ngFor="let u of users" [value]="u.id || u.ID">
-                {{ u.name || u.Name }} ({{ u.role || u.Role }} - {{ u.School?.Name || u.school?.Name || 'None' }})
+                {{ u.name || u.Name }} ({{ u.role || u.Role }} -
+                {{ u.School?.Name || u.school?.Name || "None" }})
               </option>
             </select>
           </div>
 
           <div class="flex justify-end gap-2">
-            <button class="btn-secondary !py-1 !px-3 text-xs" (click)="showForwardSelect=false">Cancel</button>
-            <button class="btn-primary !py-1 !px-3 text-xs" (click)="submitFileForward()">Forward File</button>
+            <button
+              class="btn-secondary !py-1 !px-3 text-xs"
+              (click)="showForwardSelect = false"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn-primary !py-1 !px-3 text-xs"
+              (click)="submitFileForward()"
+            >
+              Forward File
+            </button>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Right Pane: Workflow History -->
-      <div class="flex flex-col border border-[var(--border)] rounded-xl bg-[var(--surface)] overflow-hidden">
-        <div class="p-4 border-b border-[var(--border)] bg-[var(--background)] flex justify-between items-center">
-          <div>
-            <h3 class="text-sm font-bold text-[var(--text-primary)]">Workflow History</h3>
-            <p class="text-[10px] text-[var(--text-muted)]">Timeline of file routing</p>
-          </div>
+    <!-- ACTIVITY TAB -->
+    <div
+      *ngIf="activeDetailTab === 'activity'"
+      class="bg-[var(--surface)] border border-[var(--border)]/30 rounded-xl overflow-hidden min-h-[50vh]"
+    >
+      <!-- Activity Header -->
+      <div
+        class="p-5 border-b border-[var(--border)]/20 bg-[var(--background)]/60 flex items-center gap-3"
+      >
+        <div
+          class="w-8 h-8 rounded-lg bg-[var(--primary)]/10 flex items-center justify-center flex-shrink-0"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--primary)"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path
+              d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
+            />
+          </svg>
         </div>
-        <div class="p-4 overflow-y-auto max-h-[60vh]">
-          <div *ngIf="!history || history.length === 0" class="text-xs text-[var(--text-muted)] italic text-center p-4">
-            No workflow history available.
+        <div>
+          <h3 class="text-sm font-bold text-[var(--text-primary)]">
+            Workflow Activity
+          </h3>
+          <p class="text-[10px] text-[var(--text-muted)]">
+            Complete timeline of file routing and decisions
+          </p>
+        </div>
+        <span
+          class="ml-auto text-[10px] font-bold text-[var(--text-muted)] bg-[var(--background)] border border-[var(--border)] px-2.5 py-0.5 rounded-full"
+        >
+          {{ history?.length || 0 }} events
+        </span>
+      </div>
+
+      <!-- Activity Timeline -->
+      <div class="p-6">
+        <!-- Empty State -->
+        <div
+          *ngIf="!history || history.length === 0"
+          class="flex flex-col items-center justify-center py-16 text-center"
+        >
+          <div
+            class="w-14 h-14 rounded-full bg-[var(--background)] border border-[var(--border)] flex items-center justify-center mb-4"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--text-muted)"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"
+              />
+            </svg>
           </div>
-          <div class="relative pl-6 border-l border-[var(--border)] space-y-6" *ngIf="history && history.length > 0">
-            <div class="relative" *ngFor="let item of history">
-              <!-- Timeline indicator dot -->
+          <p class="text-sm font-semibold text-[var(--text-secondary)]">
+            No activity yet
+          </p>
+          <p class="text-xs text-[var(--text-muted)] mt-1">
+            Workflow events will appear here as the file moves through the
+            system.
+          </p>
+        </div>
+
+        <!-- Timeline -->
+        <div *ngIf="history && history.length > 0" class="relative pl-8">
+          <!-- Vertical line -->
+          <div
+            class="absolute left-3 top-2 bottom-2 w-px bg-[var(--border)]/50"
+          ></div>
+
+          <div class="space-y-5" *ngFor="let item of history; let last = last">
+            <div class="relative">
+              <!-- Dot -->
               <div
-                class="absolute -left-[31px] top-1.5 w-3.5 h-3.5 rounded-full border-[3px] border-white shadow-sm"
+                class="absolute -left-8 top-1.5 w-4 h-4 rounded-full border-2 border-[var(--surface)] shadow-sm flex items-center justify-center"
                 [ngClass]="{
-                  'bg-[var(--accent)]': item.Action === 'Forwarded' || item.Action === 'Created',
-                  'bg-slate-400': item.Action !== 'Forwarded' && item.Action !== 'Created'
+                  'bg-blue-500':
+                    item.Action === 'Forwarded' || item.Action === 'Created',
+                  'bg-emerald-500': item.Action === 'Approved',
+                  'bg-rose-500': item.Action === 'Rejected',
+                  'bg-amber-500': item.Action === 'Sent Back',
+                  'bg-slate-400':
+                    item.Action !== 'Forwarded' &&
+                    item.Action !== 'Created' &&
+                    item.Action !== 'Approved' &&
+                    item.Action !== 'Rejected' &&
+                    item.Action !== 'Sent Back',
                 }"
               ></div>
 
-              <!-- Content card -->
-              <div class="bg-white border border-[var(--border)] rounded-lg p-3 shadow-xs">
-                <div class="font-bold text-[var(--text-primary)] text-sm mb-1">
-                  {{ item.Action }}
+              <!-- Card -->
+              <div
+                class="bg-[var(--background)]/60 border border-[var(--border)]/30 rounded-lg p-4 hover:border-[var(--border)]/60 transition-colors"
+              >
+                <div class="flex items-start justify-between gap-3 flex-wrap">
+                  <div>
+                    <span
+                      class="text-xs font-bold text-[var(--text-primary)]"
+                      >{{ item.Action }}</span
+                    >
+                    <div class="text-xs text-[var(--text-secondary)] mt-0.5">
+                      <span class="font-medium text-[var(--text-primary)]">{{
+                        item.Actor?.Name || item.Actor?.name
+                      }}</span>
+                      <span
+                        *ngIf="item.Target"
+                        class="text-[var(--text-muted)]"
+                      >
+                        &nbsp;&rarr;&nbsp;
+                        <span class="font-medium text-[var(--text-primary)]">{{
+                          item.Target?.Name || item.Target?.name
+                        }}</span>
+                      </span>
+                    </div>
+                  </div>
+                  <span class="text-[10px] text-[var(--text-muted)] shrink-0">{{
+                    item.CreatedAt | date: "medium"
+                  }}</span>
                 </div>
-                <div class="text-xs text-[var(--text-secondary)] mb-2">
-                  From
-                  <strong class="text-[var(--text-primary)] font-medium">{{ item.Actor?.Name || item.Actor?.name }}</strong>
-                  <span *ngIf="item.Target">
-                    &rarr; To
-                    <strong class="text-[var(--text-primary)] font-medium">{{ item.Target?.Name || item.Target?.name }}</strong>
-                  </span>
-                </div>
-                <div class="text-[10px] text-[var(--text-muted)]">
-                  {{ item.CreatedAt | date: "medium" }}
-                </div>
+                <p
+                  *ngIf="item.Remarks"
+                  class="text-[11px] text-[var(--text-secondary)] mt-2 italic border-t border-[var(--border)]/20 pt-2"
+                >
+                  "{{ item.Remarks }}"
+                </p>
               </div>
             </div>
           </div>
@@ -862,20 +1264,37 @@
     </div>
 
     <!-- Attach Receipt Modal -->
-    <div class="modal-overlay" *ngIf="showAttachReceiptModal" (click)="showAttachReceiptModal=false">
+    <div
+      class="modal-overlay"
+      *ngIf="showAttachReceiptModal"
+      (click)="showAttachReceiptModal = false"
+    >
       <div class="modal" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <span class="modal-title">Attach Receipt to File</span>
-          <button class="modal-close" (click)="showAttachReceiptModal=false">✕</button>
+          <button class="modal-close" (click)="showAttachReceiptModal = false">
+            ✕
+          </button>
         </div>
         <div class="modal-body">
-          <div *ngIf="attachError" class="alert alert-error">{{attachError}}</div>
-          <div *ngIf="availableReceipts.length === 0" class="text-sm text-[var(--text-muted)] py-4 text-center">
-            You don't have any unattached inward receipts. Please upload a new receipt from the dashboard first.
+          <div *ngIf="attachError" class="alert alert-error">
+            {{ attachError }}
+          </div>
+          <div
+            *ngIf="availableReceipts.length === 0"
+            class="text-sm text-[var(--text-muted)] py-4 text-center"
+          >
+            You don't have any unattached inward receipts. Please upload a new
+            receipt from the dashboard first.
           </div>
           <div class="form-group" *ngIf="availableReceipts.length > 0">
             <label for="receipt-select">Select Receipt *</label>
-            <select id="receipt-select" name="receipt" class="w-full p-2.5 border border-[var(--border)] rounded-md text-sm" [(ngModel)]="selectedReceiptToAttach">
+            <select
+              id="receipt-select"
+              name="receipt"
+              class="w-full p-2.5 border border-[var(--border)] rounded-md text-sm"
+              [(ngModel)]="selectedReceiptToAttach"
+            >
               <option *ngFor="let rec of availableReceipts" [value]="rec.ID">
                 [{{ rec.UniqueNumber }}] {{ rec.Title }} ({{ rec.Category }})
               </option>
@@ -883,8 +1302,19 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn-secondary" (click)="showAttachReceiptModal=false">Cancel</button>
-          <button class="btn-primary" [disabled]="availableReceipts.length === 0" (click)="attachReceipt()">Attach Receipt</button>
+          <button
+            class="btn-secondary"
+            (click)="showAttachReceiptModal = false"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn-primary"
+            [disabled]="availableReceipts.length === 0"
+            (click)="attachReceipt()"
+          >
+            Attach Receipt
+          </button>
         </div>
       </div>
     </div>
