@@ -533,7 +533,11 @@ export class DetailsComponent implements OnInit {
   loadAvailableReceipts() {
     this.api.getDocuments(this.currentUser.ID).subscribe({
       next: (docs) => {
-        this.availableReceipts = docs || [];
+        const allDocs = docs || [];
+        this.availableReceipts = allDocs.filter((doc: any) => 
+          !doc.UniqueNumber?.includes('-C') && 
+          doc.FileID !== this.file?.ID
+        );
         if (this.availableReceipts.length > 0) {
           this.selectedReceiptToAttach = this.availableReceipts[0].ID;
         } else {

@@ -1967,6 +1967,17 @@ func (s *service) AttachReceipt(fileID, authenticatedUserID uuid.UUID, receiptID
 		return nil, errors.New("receipt not found")
 	}
 
+	if receipt.FileID != nil && *receipt.FileID == fileID {
+		return nil, errors.New("this receipt is already attached to this file")
+	}
+
+	// Also check if a clone of this receipt is already attached
+	for _, attachedReceipt := range file.Receipts {
+		if attachedReceipt.UniqueNumber == receipt.UniqueNumber || strings.HasPrefix(attachedReceipt.UniqueNumber, receipt.UniqueNumber+"-C") {
+			return nil, errors.New("this receipt is already attached to this file")
+		}
+	}
+
 	if receipt.FileID != nil {
 		// Clone receipt to allow reusability across multiple files
 		newReceipt := *receipt
