@@ -1,6 +1,7 @@
 package document
 
 import (
+	"fmt"
 	"time"
 
 	"office-file-sharing/backend/internal/shared/models"
@@ -8,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
 
 type Repository interface {
 	Create(doc *models.Document) error
@@ -83,7 +85,7 @@ func (r *repository) ListByUser(userID uuid.UUID, search string) ([]models.Docum
 		// 2. Documents where they are in history
 		// 3. All Official Circulars
 		query = query.Where(
-			"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?)",
+			"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?) OR category = 'Official Circular'",
 			userID, userID, userID,
 		)
 
@@ -95,12 +97,12 @@ func (r *repository) ListByUser(userID uuid.UUID, search string) ([]models.Docum
 		// 4. Official Circulars targeted at their department or All
 		if user.ClassSection != "" {
 			query = query.Where(
-				"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?) OR uploader_id IN (SELECT id FROM users WHERE class_section = ? AND role = 'vocational')",
-				userID, userID, userID, user.ClassSection,
+				"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?) OR uploader_id IN (SELECT id FROM users WHERE class_section = ? AND role = 'vocational') OR (category = 'Official Circular' AND (target_class = 'All' OR target_class LIKE ?))",
+				userID, userID, userID, user.ClassSection, fmt.Sprintf("%%%s%%", user.ClassSection),
 			)
 		} else {
 			query = query.Where(
-				"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?)",
+				"uploader_id = ? OR current_owner_id = ? OR id IN (SELECT document_id FROM workflow_histories WHERE actor_id = ?) OR (category = 'Official Circular' AND target_class = 'All')",
 				userID, userID, userID,
 			)
 		}

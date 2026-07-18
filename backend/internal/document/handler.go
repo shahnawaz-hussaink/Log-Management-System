@@ -30,7 +30,7 @@ func (h *Handler) Upload(c echo.Context) error {
 	targetOwnerIDsStr := c.FormValue("target_owner_ids")
 	var targetOwnerIDs []uuid.UUID
 	var err error
-	if category != "Circular" && category != "Assignment Broadcast" {
+	if category != "Official Circular" && category != "Assignment Broadcast" {
 		ids := strings.Split(targetOwnerIDsStr, ",")
 		for _, idStr := range ids {
 			idStr = strings.TrimSpace(idStr)

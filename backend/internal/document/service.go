@@ -142,7 +142,7 @@ func (s *service) Upload(uploaderID uuid.UUID, targetOwnerIDs []uuid.UUID, title
 	}
 	docStatus := models.StatusPendingApproval
 
-	if category == "Circular" || category == "Assignment Broadcast" {
+	if category == "Official Circular" || category == "Assignment Broadcast" {
 		assignedOwnerID = uploaderID
 		docStatus = models.StatusApproved // Immediately visible
 	} else if len(targetOwnerIDs) == 1 && targetOwnerIDs[0] == uploaderID {
@@ -208,7 +208,7 @@ func (s *service) Upload(uploaderID uuid.UUID, targetOwnerIDs []uuid.UUID, title
 	}
 
 	// Setup pending approver records for the entire chain
-	if category != "Circular" && category != "Assignment Broadcast" {
+	if category != "Official Circular" && category != "Assignment Broadcast" {
 		for i, id := range targetOwnerIDs {
 			pendingApprover := &models.DocumentPendingApprover{
 				ID:         uuid.New(),
@@ -899,7 +899,7 @@ func (s *service) authorizeDocAccess(doc *models.Document, userID uuid.UUID) err
 	}
 
 	// Circular or Broadcast access
-	if doc.Category == "Circular" || doc.Category == "Assignment Broadcast" {
+	if doc.Category == "Official Circular" || doc.Category == "Assignment Broadcast" {
 		if doc.TargetClass == "All" {
 			return nil
 		}

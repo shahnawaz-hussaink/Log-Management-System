@@ -130,7 +130,7 @@ export class UploadComponent implements OnInit {
 
     const currentUser = this.auth.getCurrentUser();
 
-    if (this.category !== 'Circular' && this.category !== 'Assignment Broadcast' && this.forwardImmediately && !this.selectedApproverId) {
+    if (this.category !== 'Official Circular' && this.category !== 'Assignment Broadcast' && this.forwardImmediately && !this.selectedApproverId) {
       this.error = 'Please select a recipient to forward to.';
       return;
     }
@@ -141,7 +141,7 @@ export class UploadComponent implements OnInit {
     }
     formData.append('uploader_id', currentUser.ID || currentUser.id);
     
-    if (this.category !== 'Circular' && this.category !== 'Assignment Broadcast') {
+    if (this.category !== 'Official Circular' && this.category !== 'Assignment Broadcast') {
       const finalApproverId = this.forwardImmediately ? this.selectedApproverId : (currentUser.ID || currentUser.id);
       formData.append('target_owner_ids', finalApproverId);
     }
