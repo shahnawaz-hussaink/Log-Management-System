@@ -202,20 +202,18 @@
           <button
             class="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold rounded-lg transition-all border-0 cursor-pointer text-left bg-transparent"
             [class.bg-[var(--primary-light)]]="
-              router.url === '/admin' && activeAdminSection === 'overview'
+              router.url === '/admin' || router.url === '/admin/overview'
             "
             [class.text-[var(--primary-active)]]="
-              router.url === '/admin' && activeAdminSection === 'overview'
+              router.url === '/admin' || router.url === '/admin/overview'
             "
             [class.text-[var(--text-secondary)]]="
-              router.url !== '/admin' || activeAdminSection !== 'overview'
+              router.url !== '/admin' && router.url !== '/admin/overview'
             "
             [class.hover:bg-[var(--background)]]="
-              router.url !== '/admin' || activeAdminSection !== 'overview'
+              router.url !== '/admin' && router.url !== '/admin/overview'
             "
-            (click)="
-              router.navigate(['/admin']); activeAdminSection = 'overview'
-            "
+            (click)="navigateToAdminSection('overview')"
             [title]="isSidebarCollapsed ? 'Admin Dashboard' : ''"
           >
             <svg
@@ -243,16 +241,16 @@
           <button
             class="w-full flex items-center justify-between px-3 py-2.5 text-xs font-bold rounded-lg transition-all border-0 cursor-pointer text-left bg-transparent"
             [class.bg-[var(--primary-light)]]="
-              router.url.startsWith('/admin') && activeAdminSection === 'users'
+              router.url === '/admin/users'
             "
             [class.text-[var(--primary-active)]]="
-              router.url.startsWith('/admin') && activeAdminSection === 'users'
+              router.url === '/admin/users'
             "
             [class.text-[var(--text-secondary)]]="
-              !router.url.startsWith('/admin') || activeAdminSection !== 'users'
+              router.url !== '/admin/users'
             "
             [class.hover:bg-[var(--background)]]="
-              !router.url.startsWith('/admin') || activeAdminSection !== 'users'
+              router.url !== '/admin/users'
             "
             (click)="navigateToAdminSection('users')"
             [title]="isSidebarCollapsed ? 'User Management' : ''"
@@ -300,20 +298,16 @@
           <button
             class="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold rounded-lg transition-all border-0 cursor-pointer text-left bg-transparent"
             [class.bg-[var(--primary-light)]]="
-              router.url.startsWith('/admin') &&
-              activeAdminSection === 'schools'
+              router.url === '/admin/schools'
             "
             [class.text-[var(--primary-active)]]="
-              router.url.startsWith('/admin') &&
-              activeAdminSection === 'schools'
+              router.url === '/admin/schools'
             "
             [class.text-[var(--text-secondary)]]="
-              !router.url.startsWith('/admin') ||
-              activeAdminSection !== 'schools'
+              router.url !== '/admin/schools'
             "
             [class.hover:bg-[var(--background)]]="
-              !router.url.startsWith('/admin') ||
-              activeAdminSection !== 'schools'
+              router.url !== '/admin/schools'
             "
             (click)="navigateToAdminSection('schools')"
             [title]="isSidebarCollapsed ? 'School Dashboard' : ''"
@@ -339,20 +333,16 @@
           <button
             class="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold rounded-lg transition-all border-0 cursor-pointer text-left bg-transparent"
             [class.bg-[var(--primary-light)]]="
-              router.url.startsWith('/admin') &&
-              activeAdminSection === 'doctypes'
+              router.url === '/admin/doctypes'
             "
             [class.text-[var(--primary-active)]]="
-              router.url.startsWith('/admin') &&
-              activeAdminSection === 'doctypes'
+              router.url === '/admin/doctypes'
             "
             [class.text-[var(--text-secondary)]]="
-              !router.url.startsWith('/admin') ||
-              activeAdminSection !== 'doctypes'
+              router.url !== '/admin/doctypes'
             "
             [class.hover:bg-[var(--background)]]="
-              !router.url.startsWith('/admin') ||
-              activeAdminSection !== 'doctypes'
+              router.url !== '/admin/doctypes'
             "
             (click)="navigateToAdminSection('doctypes')"
             [title]="isSidebarCollapsed ? 'Document Dashboard' : ''"

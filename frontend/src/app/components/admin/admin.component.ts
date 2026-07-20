@@ -112,13 +112,27 @@ export class AdminComponent implements OnInit {
       this.loadSchools();
     }
 
-    // Subscribe to query params for global sidebar navigation
-    this.route.queryParams.subscribe(params => {
-      if (params['section']) {
-        this.activeSection = params['section'];
-        this.clearMessages();
-      }
+    // Determine active section based on the URL path
+    this.updateActiveSectionFromUrl(this.router.url);
+
+    // Subscribe to router events to handle URL updates dynamically
+    this.router.events.subscribe(() => {
+      this.updateActiveSectionFromUrl(this.router.url);
     });
+  }
+
+  updateActiveSectionFromUrl(url: string) {
+    const path = url.split('?')[0]; // strip query parameters
+    if (path.endsWith('/users')) {
+      this.activeSection = 'users';
+    } else if (path.endsWith('/schools')) {
+      this.activeSection = 'schools';
+    } else if (path.endsWith('/doctypes')) {
+      this.activeSection = 'doctypes';
+    } else {
+      this.activeSection = 'overview';
+    }
+    this.clearMessages();
   }
 
   setSection(section: string) {

@@ -217,7 +217,7 @@ export class DashboardComponent implements OnInit {
       // 2. Tab filter
       if (this.activeTab !== 'all_files') {
         if (this.activeTab === 'received') {
-          list = list.filter(file => (file.CurrentOwnerID || '').toLowerCase() === currentUserIdLower && (file.CreatorID || '').toLowerCase() !== currentUserIdLower && file.Status !== 'Closed' && file.Status !== 'Archived');
+          list = list.filter(file => (file.CurrentOwnerID || '').toLowerCase() === currentUserIdLower && (file.CreatorID || '').toLowerCase() !== currentUserIdLower);
         } else if (this.activeTab === 'my_files') {
           list = list.filter(file => (file.CreatorID || '').toLowerCase() === currentUserIdLower);
         }
@@ -261,7 +261,7 @@ export class DashboardComponent implements OnInit {
       const currentUserIdLower = (this.currentUser.ID || this.currentUser.id || '').toLowerCase();
 
       if (tab === 'received') {
-        list = list.filter(file => (file.CurrentOwnerID || '').toLowerCase() === currentUserIdLower && (file.CreatorID || '').toLowerCase() !== currentUserIdLower && file.Status !== 'Closed' && file.Status !== 'Archived');
+        list = list.filter(file => (file.CurrentOwnerID || '').toLowerCase() === currentUserIdLower && (file.CreatorID || '').toLowerCase() !== currentUserIdLower);
       } else if (tab === 'my_files') {
         list = list.filter(file => (file.CreatorID || '').toLowerCase() === currentUserIdLower);
       } else {

@@ -270,7 +270,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   navigateToAdminSection(section: string) {
     this.activeAdminSection = section;
-    this.router.navigate(['/admin'], { queryParams: { section } });
+    if (section === 'overview') {
+      this.router.navigate(['/admin']);
+    } else {
+      this.router.navigate([`/admin/${section}`]);
+    }
   }
 
   selectSidebarFolder(folder: string) {
