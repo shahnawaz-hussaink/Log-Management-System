@@ -70,8 +70,7 @@ func (r *repository) GetStats(schoolID *string) (*SystemStats, error) {
 	}
 	docQueryActive.Count(&stats.ActiveDocuments)
 	
-	// Workflow History doesn't have school_id directly, would need join, ignoring for now or leaving as global
-	r.db.Model(&models.WorkflowHistory{}).Where("event_type = ?", "sla_breach").Count(&stats.SLABreaches)
+	stats.SLABreaches = 0
 
 	return &stats, nil
 }
@@ -148,7 +147,7 @@ func (r *repository) GetAllDocumentTypes(schoolID *string) ([]DocumentTypeRespon
 			Slug:              dt.Slug,
 			WorkflowStages:    dt.WorkflowStages,
 			RequiredFields:    dt.RequiredFields,
-			SlaHours:          dt.SlaHours,
+			SlaHours:          0,
 			Active:            dt.Active,
 		})
 	}

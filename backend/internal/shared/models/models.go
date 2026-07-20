@@ -54,7 +54,6 @@ type DocumentType struct {
 	Slug              string     `gorm:"size:100;not null"`
 	WorkflowStages    string     `gorm:"type:text;not null"` // JSON array of stages
 	RequiredFields    string     `gorm:"type:text"`          // JSON array of dynamic fields
-	SlaHours          int        `gorm:"default:72"`
 	Active            bool       `gorm:"default:true"`
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
@@ -78,7 +77,6 @@ type Document struct {
 	Category        string         `gorm:"size:100"`
 	Version         int            `gorm:"not null;default:1;uniqueIndex:idx_unique_number_version"`
 	CurrentStage    int            `gorm:"not null;default:1"`
-	SlaDeadline     *time.Time
 	Metadata        string    `gorm:"type:text"` // JSON object containing form fields
 	Priority        string    `gorm:"size:50;default:'Normal'"` // Normal, Urgent, Confidential
 	Direction       string    `gorm:"size:50;default:'Inward'"` // Inward, Outward

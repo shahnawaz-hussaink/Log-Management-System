@@ -198,11 +198,7 @@ func (s *service) Upload(uploaderID uuid.UUID, targetOwnerIDs []uuid.UUID, title
 		CurrentStage:   1,
 	}
 
-	// Calculate SLA deadline if type is resolved
-	if dt != nil {
-		deadline := time.Now().Add(time.Duration(dt.SlaHours) * time.Hour)
-		doc.SlaDeadline = &deadline
-	}
+
 
 	if err := s.repo.Create(doc); err != nil {
 		return nil, err
@@ -513,10 +509,7 @@ func (s *service) Replace(docID, authenticatedUserID, targetOwnerID uuid.UUID, t
 	var user models.User
 	s.repo.(*repository).db.First(&user, "id = ?", authenticatedUserID)
 
-	var dt *models.DocumentType
-	if oldDoc.DocumentTypeID != nil {
-		dt, _ = s.repo.GetDocumentTypeByID(*oldDoc.DocumentTypeID)
-	}
+
 
 	newDoc := &models.Document{
 		ID:             newDocID,
@@ -539,10 +532,7 @@ func (s *service) Replace(docID, authenticatedUserID, targetOwnerID uuid.UUID, t
 		CurrentStage:   1,
 	}
 
-	if dt != nil {
-		deadline := time.Now().Add(time.Duration(dt.SlaHours) * time.Hour)
-		newDoc.SlaDeadline = &deadline
-	}
+
 
 	if err := s.repo.Create(newDoc); err != nil {
 		return nil, err
@@ -667,16 +657,11 @@ func (s *service) TakeAction(docID, authenticatedUserID uuid.UUID, req ActionReq
 			doc.CurrentStage = doc.CurrentStage + 1
 			wfAction = models.ActionApproved
 
-			if doc.DocumentTypeID != nil {
-				if dt, errDT := s.repo.GetDocumentTypeByID(*doc.DocumentTypeID); errDT == nil {
-					deadline := time.Now().Add(time.Duration(dt.SlaHours) * time.Hour)
-					doc.SlaDeadline = &deadline
-				}
-			}
+
 		} else {
 			// If a DocumentType and stages are defined, resolve if we need to advance stages (legacy/manual forward logic)
 			if doc.DocumentTypeID != nil {
-				dt, errDT := s.repo.GetDocumentTypeByID(*doc.DocumentTypeID)
+				_, errDT := s.repo.GetDocumentTypeByID(*doc.DocumentTypeID)
 				if errDT == nil {
 					if req.TargetID != nil && *req.TargetID != authenticatedUserID {
 						var targetUser models.User
@@ -700,9 +685,6 @@ func (s *service) TakeAction(docID, authenticatedUserID uuid.UUID, req ActionReq
 						}
 						s.repo.CreatePendingApprover(nextApproverRecord)
 
-						// Set new SLA deadline
-						deadline := time.Now().Add(time.Duration(dt.SlaHours) * time.Hour)
-						doc.SlaDeadline = &deadline
 						wfAction = models.ActionApproved // keep approved as action name
 					}
 				}
@@ -753,12 +735,7 @@ func (s *service) TakeAction(docID, authenticatedUserID uuid.UUID, req ActionReq
 		}
 		s.repo.CreatePendingApprover(nextApprover)
 
-		if doc.DocumentTypeID != nil {
-			if dt, errDT := s.repo.GetDocumentTypeByID(*doc.DocumentTypeID); errDT == nil {
-				deadline := time.Now().Add(time.Duration(dt.SlaHours) * time.Hour)
-				doc.SlaDeadline = &deadline
-			}
-		}
+
 
 	case "Refer":
 		if req.TargetID == nil {
@@ -1268,11 +1245,9 @@ func (s *service) GetReports(schoolID uuid.UUID) (interface{}, error) {
 		avgTurnaroundHours = totalDuration.Hours() / float64(count)
 	}
 
-	// 2. Count statuses and SLA breaches
+	// 2. Count statuses
 	totalActiveFiles := 0
 	totalApprovedFiles := 0
-	slaBreaches := 0
-	now := time.Now()
 
 	for _, doc := range docs {
 		if doc.Status == models.StatusPendingApproval || doc.Status == models.StatusDraft || doc.Status == models.StatusSentBack {
@@ -1280,9 +1255,6 @@ func (s *service) GetReports(schoolID uuid.UUID) (interface{}, error) {
 		}
 		if doc.Status == models.StatusApproved {
 			totalApprovedFiles++
-		}
-		if (doc.Status == models.StatusPendingApproval || doc.Status == models.StatusSentBack) && doc.SlaDeadline != nil && doc.SlaDeadline.Before(now) {
-			slaBreaches++
 		}
 	}
 
@@ -1365,7 +1337,7 @@ func (s *service) GetReports(schoolID uuid.UUID) (interface{}, error) {
 		"total_active_files":   totalActiveFiles,
 		"total_approved_files": totalApprovedFiles,
 		"avg_turnaround_hours": avgTurnaroundHours,
-		"sla_breaches":         slaBreaches,
+		"sla_breaches":         0,
 		"user_pendency":        userPendencies,
 		"category_workloads":   categoryWorkloads,
 		"movements":            movements,

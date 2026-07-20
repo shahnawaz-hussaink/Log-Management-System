@@ -239,10 +239,6 @@ func (s *service) CreateDocumentType(req CreateDocTypeRequest) (*DocumentTypeRes
 	if req.RequiredFields == "" {
 		req.RequiredFields = "[]"
 	}
-	if req.SlaHours == 0 {
-		req.SlaHours = 72
-	}
-
 	dt := &models.DocumentType{
 		ID:             uuid.New(),
 		SchoolID:       req.SchoolID,
@@ -250,7 +246,6 @@ func (s *service) CreateDocumentType(req CreateDocTypeRequest) (*DocumentTypeRes
 		Slug:           req.Slug,
 		WorkflowStages: req.WorkflowStages,
 		RequiredFields: req.RequiredFields,
-		SlaHours:       req.SlaHours,
 		Active:         true,
 	}
 
@@ -265,7 +260,7 @@ func (s *service) CreateDocumentType(req CreateDocTypeRequest) (*DocumentTypeRes
 		Slug:           dt.Slug,
 		WorkflowStages: dt.WorkflowStages,
 		RequiredFields: dt.RequiredFields,
-		SlaHours:       dt.SlaHours,
+		SlaHours:       0,
 		Active:         dt.Active,
 	}, nil
 }
@@ -302,9 +297,6 @@ func (s *service) UpdateDocumentType(id uuid.UUID, req UpdateDocTypeRequest) (*D
 	if req.RequiredFields != "" {
 		dt.RequiredFields = req.RequiredFields
 	}
-	if req.SlaHours > 0 {
-		dt.SlaHours = req.SlaHours
-	}
 	dt.Active = req.Active
 
 	if err := s.repo.UpdateDocumentType(dt); err != nil {
@@ -318,7 +310,7 @@ func (s *service) UpdateDocumentType(id uuid.UUID, req UpdateDocTypeRequest) (*D
 		Slug:              dt.Slug,
 		WorkflowStages:    dt.WorkflowStages,
 		RequiredFields:    dt.RequiredFields,
-		SlaHours:          dt.SlaHours,
+		SlaHours:          0,
 		Active:            dt.Active,
 	}, nil
 }

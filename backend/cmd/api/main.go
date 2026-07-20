@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -12,7 +11,6 @@ import (
 	"office-file-sharing/backend/internal/document"
 	"office-file-sharing/backend/internal/shared/config"
 	"office-file-sharing/backend/internal/shared/db"
-	"office-file-sharing/backend/internal/shared/email"
 	"office-file-sharing/backend/internal/shared/models"
 	"office-file-sharing/backend/internal/user"
 
@@ -86,118 +84,13 @@ func main() {
 	document.RegisterRoutes(api, docHandler, []byte(cfg.JWTSecret))
 	admin.RegisterRoutes(api, adminHandler, []byte(cfg.JWTSecret), database)
 
-	// Start background SLA auto-escalation job
-	go startSLAScheduler(database)
+
 
 	log.Println("Modular Academic Monolith starting on port :8080...")
 	log.Fatal(e.Start(":8080"))
 }
 
-func startSLAScheduler(db *gorm.DB) {
-	ticker := time.NewTicker(30 * time.Second)
-	log.Println("Background SLA monitoring worker started successfully.")
-	for range ticker.C {
-		var breachedDocs []models.Document
-		now := time.Now()
 
-		// Fetch documents pending approval with breached deadlines
-		err := db.Preload("School").
-			Where("status = ? AND sla_deadline IS NOT NULL AND sla_deadline < ?", models.StatusPendingApproval, now).
-			Find(&breachedDocs).Error
-		if err != nil {
-			log.Printf("SLA Worker Error: Failed to query breached documents: %v", err)
-			continue
-		}
-
-		for _, doc := range breachedDocs {
-			// Find the Principal of the School to escalate to
-			var principal models.User
-			errP := db.First(&principal, "school_id = ? AND role = 'Principal'", doc.SchoolID).Error
-			if errP != nil {
-				log.Printf("SLA Worker Warning: No Principal found for school %v to escalate document %s", doc.SchoolID, doc.UniqueNumber)
-				continue
-			}
-
-			// Capture old owner for notification
-			oldOwnerID := doc.CurrentOwnerID
-
-			oldDeadlineStr := "Unknown"
-			if doc.SlaDeadline != nil {
-				oldDeadlineStr = doc.SlaDeadline.Format(time.RFC822)
-			}
-
-			// Update document state: escalate to Principal
-			doc.CurrentOwnerID = principal.ID
-			// Push SLA deadline out (e.g. Principal has 48 more hours to act)
-			newDeadline := time.Now().Add(48 * time.Hour)
-			doc.SlaDeadline = &newDeadline
-			db.Save(&doc)
-
-			// Log SLA breach event in WorkflowHistory audit timeline
-			history := models.WorkflowHistory{
-				ID:         uuid.New(),
-				SchoolID:   doc.SchoolID,
-				DocumentID: &doc.ID,
-				ActorID:    uuid.Nil, // System action
-				TargetID:   &principal.ID,
-				Action:     "Escalated",
-				Remarks:    fmt.Sprintf("SLA breached (deadline was %s). Auto-escalated to Principal.", oldDeadlineStr),
-				ActorRole:  "System",
-				Stage:      doc.CurrentStage,
-				Version:    doc.Version,
-				EventType:  "sla_breach",
-			}
-			db.Create(&history)
-
-			// Update stage pending approver status
-			db.Model(&models.DocumentPendingApprover{}).
-				Where("document_id = ? AND stage = ? AND status = 'Pending'", doc.ID, doc.CurrentStage).
-				Updates(map[string]interface{}{"status": "Escalated"})
-
-			// Create new pending approver record for Principal
-			nextApprover := models.DocumentPendingApprover{
-				ID:         uuid.New(),
-				DocumentID: doc.ID,
-				UserID:     principal.ID,
-				Stage:      doc.CurrentStage,
-				Status:     "Pending",
-			}
-			db.Create(&nextApprover)
-
-			// Queue warning notifications in DB
-			notifPayload := fmt.Sprintf(`{"document_title": "%s", "message": "SLA warning: Document %s has been escalated due to inaction."}`, doc.Title, doc.UniqueNumber)
-			warningNotif := models.Notification{
-				ID:          uuid.New(),
-				SchoolID:    doc.SchoolID,
-				RecipientID: oldOwnerID,
-				DocumentID:  &doc.ID,
-				Channel:     "email",
-				Template:    "sla_warning",
-				Payload:     notifPayload,
-				Status:      "pending",
-			}
-			if err := db.Create(&warningNotif).Error; err == nil {
-				go email.SendNotificationEmail(db, warningNotif.ID)
-			}
- 
-			principalNotif := models.Notification{
-				ID:          uuid.New(),
-				SchoolID:    doc.SchoolID,
-				RecipientID: principal.ID,
-				DocumentID:  &doc.ID,
-				Channel:     "email",
-				Template:    "action_required",
-				Payload:     fmt.Sprintf(`{"document_title": "%s", "message": "Escalated document %s requires your attention."}`, doc.Title, doc.UniqueNumber),
-				Status:      "pending",
-			}
-			if err := db.Create(&principalNotif).Error; err == nil {
-				go email.SendNotificationEmail(db, principalNotif.ID)
-			}
-
-			log.Printf("SLA Worker: Auto-escalated document %s (%s) to Principal %s due to SLA breach.", doc.UniqueNumber, doc.Title, principal.Name)
-		}
-	}
-}
 
 func seedData(gormDB *gorm.DB) {
 	// 1. Seed School
@@ -292,7 +185,6 @@ func seedData(gormDB *gorm.DB) {
 				Slug:           "staff-grievance",
 				WorkflowStages: `[{"stage": 1, "role": "Teaching staff", "label": "Department Head", "optional": false}]`,
 				RequiredFields: `[]`,
-				SlaHours:       72,
 			},
 			{
 				SchoolID:       s.ID,
@@ -300,7 +192,6 @@ func seedData(gormDB *gorm.DB) {
 				Slug:           "infrastructure-issue",
 				WorkflowStages: `[{"stage": 1, "role": "School Admin", "label": "School Admin Final approval", "optional": false}]`,
 				RequiredFields: `["reason", "urgency"]`,
-				SlaHours:       120,
 			},
 			{
 				SchoolID:       s.ID,
@@ -308,7 +199,6 @@ func seedData(gormDB *gorm.DB) {
 				Slug:           "disciplinary-issue",
 				WorkflowStages: `[{"stage": 1, "role": "Teaching staff", "label": "Department Head", "optional": false}]`,
 				RequiredFields: `["event_name", "event_date"]`,
-				SlaHours:       24,
 			},
 			{
 				SchoolID:       s.ID,
@@ -316,7 +206,6 @@ func seedData(gormDB *gorm.DB) {
 				Slug:           "audit-report",
 				WorkflowStages: `[{"stage": 1, "role": "School Admin", "label": "School Admin Approval", "optional": false}]`,
 				RequiredFields: `["audit_reason", "percentage"]`,
-				SlaHours:       96,
 			},
 		}
 

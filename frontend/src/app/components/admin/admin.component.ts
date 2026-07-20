@@ -123,10 +123,18 @@ export class AdminComponent implements OnInit {
 
   updateActiveSectionFromUrl(url: string) {
     const path = url.split('?')[0]; // strip query parameters
+    const role = this.currentUser?.Role || this.currentUser?.role;
+    const isDHEOrAdmin = (role === 'Admin' || role === 'SuperAdmin' || role === 'DHE');
+
     if (path.endsWith('/users')) {
       this.activeSection = 'users';
     } else if (path.endsWith('/schools')) {
-      this.activeSection = 'schools';
+      if (isDHEOrAdmin) {
+        this.activeSection = 'schools';
+      } else {
+        this.activeSection = 'overview';
+        this.router.navigate(['/admin']);
+      }
     } else if (path.endsWith('/doctypes')) {
       this.activeSection = 'doctypes';
     } else {

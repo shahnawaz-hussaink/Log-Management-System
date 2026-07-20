@@ -88,7 +88,6 @@ func main() {
 				Slug:           "staff-grievance",
 				WorkflowStages: `[{"stage": 1, "role": "Teaching staff", "label": "Department Head", "optional": false}]`,
 				RequiredFields: `[]`,
-				SlaHours:       72,
 			},
 			{
 				SchoolID:       s.ID,
@@ -96,7 +95,6 @@ func main() {
 				Slug:           "infrastructure-issue",
 				WorkflowStages: `[{"stage": 1, "role": "School Admin", "label": "School Admin Final approval", "optional": false}]`,
 				RequiredFields: `["reason", "urgency"]`,
-				SlaHours:       120,
 			},
 			{
 				SchoolID:       s.ID,
@@ -104,7 +102,6 @@ func main() {
 				Slug:           "disciplinary-issue",
 				WorkflowStages: `[{"stage": 1, "role": "Teaching staff", "label": "Department Head", "optional": false}]`,
 				RequiredFields: `["event_name", "event_date"]`,
-				SlaHours:       24,
 			},
 			{
 				SchoolID:       s.ID,
@@ -112,7 +109,6 @@ func main() {
 				Slug:           "audit-report",
 				WorkflowStages: `[{"stage": 1, "role": "School Admin", "label": "School Admin Approval", "optional": false}]`,
 				RequiredFields: `["audit_reason", "percentage"]`,
-				SlaHours:       96,
 			},
 		}
 		for i := range docTypes {
