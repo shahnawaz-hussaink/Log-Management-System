@@ -2,13 +2,14 @@ package auth
 
 import (
 	"office-file-sharing/backend/internal/shared/models"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Repository interface {
 	GetByEmail(email string) (*models.User, error)
 	Create(user *models.User) error
-	CheckAdminAccess(roleName string) bool
+	CheckAdminAccess(roleName string, schoolID *uuid.UUID) bool
 }
 
 type repository struct {
@@ -31,13 +32,23 @@ func (r *repository) Create(user *models.User) error {
 	return r.db.Create(user).Error
 }
 
-func (r *repository) CheckAdminAccess(roleName string) bool {
+func (r *repository) CheckAdminAccess(roleName string, schoolID *uuid.UUID) bool {
 	if roleName == "SuperAdmin" || roleName == "Admin" || roleName == "DHE" || roleName == "School Admin" {
 		return true
 	}
 
 	var role models.Role
-	if err := r.db.First(&role, "role_name = ?", roleName).Error; err != nil {
+	var err error
+	if schoolID != nil {
+		err = r.db.First(&role, "role_name = ? AND tenant_id = ?", roleName, *schoolID).Error
+	}
+	if schoolID == nil || err != nil {
+		err = r.db.First(&role, "role_name = ? AND tenant_id IS NULL", roleName).Error
+	}
+	if err != nil {
+		err = r.db.First(&role, "role_name = ?", roleName).Error
+	}
+	if err != nil {
 		return false
 	}
 

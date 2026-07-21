@@ -616,6 +616,7 @@ func (s *service) GetAllRoles(actorRole string, actorSchoolID *uuid.UUID) ([]Rol
 				ParentRoleID:   r.ParentRoleID,
 				ParentRoleName: parentName,
 				TenantID:       r.TenantID,
+				OrgName:        r.OrgName,
 				CreatedBy:      r.CreatedBy,
 				Path:           r.Path,
 				CreatedAt:      r.CreatedAt,
@@ -735,6 +736,14 @@ func (s *service) CreateRole(req CreateRoleRequest, actorRole string, actorSchoo
 		}
 	}
 
+	orgName := "System Level"
+	if role.TenantID != nil {
+		tenantSchool, err := s.repo.GetSchoolByID(*role.TenantID)
+		if err == nil {
+			orgName = tenantSchool.Name
+		}
+	}
+
 	return &RoleResponse{
 		ID:             role.ID,
 		RoleName:       role.RoleName,
@@ -742,6 +751,7 @@ func (s *service) CreateRole(req CreateRoleRequest, actorRole string, actorSchoo
 		ParentRoleID:   role.ParentRoleID,
 		ParentRoleName: parentName,
 		TenantID:       role.TenantID,
+		OrgName:        orgName,
 		CreatedBy:      role.CreatedBy,
 		Path:           role.Path,
 		CreatedAt:      role.CreatedAt,
@@ -897,6 +907,14 @@ func (s *service) UpdateRole(id uuid.UUID, req UpdateRoleRequest, actorRole stri
 		}
 	}
 
+	orgName := "System Level"
+	if role.TenantID != nil {
+		tenantSchool, err := s.repo.GetSchoolByID(*role.TenantID)
+		if err == nil {
+			orgName = tenantSchool.Name
+		}
+	}
+
 	return &RoleResponse{
 		ID:             role.ID,
 		RoleName:       role.RoleName,
@@ -904,6 +922,7 @@ func (s *service) UpdateRole(id uuid.UUID, req UpdateRoleRequest, actorRole stri
 		ParentRoleID:   role.ParentRoleID,
 		ParentRoleName: parentName,
 		TenantID:       role.TenantID,
+		OrgName:        orgName,
 		CreatedBy:      role.CreatedBy,
 		Path:           role.Path,
 		CreatedAt:      role.CreatedAt,
@@ -1092,10 +1111,12 @@ func (s *service) CreateOrganization(req CreateOrganizationRequest, actorRole st
 	var tenantID *uuid.UUID
 	var pocID *uuid.UUID
 
-	if req.AdminEmail != "" && req.AdminName != "" {
-		slug := strings.ToLower(strings.ReplaceAll(req.OrganizationName, " ", "-"))
+	if req.AdminEmail != "" {
+		newSchoolID := uuid.New()
+		baseSlug := strings.ToLower(strings.ReplaceAll(req.OrganizationName, " ", "-"))
+		slug := baseSlug + "-" + newSchoolID.String()[:8]
 		newSchool := &models.School{
-			ID:   uuid.New(),
+			ID:   newSchoolID,
 			Name: req.OrganizationName,
 			Slug: slug,
 		}
@@ -1104,23 +1125,25 @@ func (s *service) CreateOrganization(req CreateOrganizationRequest, actorRole st
 		}
 		tenantID = &newSchool.ID
 
-		childRoleName := req.Type
-		if childRoleName == "" {
-			childRoleName = "School Admin"
-		} else {
-			// Title case the role name
-			runes := []rune(childRoleName)
-			if len(runes) > 0 && runes[0] >= 'a' && runes[0] <= 'z' {
-				runes[0] = runes[0] - 'a' + 'A'
-			}
-			childRoleName = string(runes)
-		}
+
+		childRoleName := "Admin " + req.OrganizationName
 
 		var parentRoleID *uuid.UUID
 		var parentPath string
 		if creatorRoleRec != nil {
 			parentRoleID = &creatorRoleRec.ID
 			parentPath = creatorRoleRec.Path
+		}
+
+		if parentOrgID != nil {
+			var parentOrg models.Organization
+			if err := repoImpl.db.Where("id = ?", *parentOrgID).First(&parentOrg).Error; err == nil && parentOrg.TenantID != nil {
+				var parentTenantRole models.Role
+				if err := repoImpl.db.Where("tenant_id = ? AND is_admin_access = true", *parentOrg.TenantID).First(&parentTenantRole).Error; err == nil {
+					parentRoleID = &parentTenantRole.ID
+					parentPath = parentTenantRole.Path
+				}
+			}
 		}
 
 		newRoleID := uuid.New()

@@ -416,7 +416,7 @@ func (h *Handler) GetReports(c echo.Context) error {
 	var user models.User
 	db := h.service.(*service).repo.(*repository).db
 	err := db.First(&user, "id = ?", userID).Error
-	if err != nil || !admin.HasAdminAccess(db, user.Role) || user.SchoolID == nil {
+	if err != nil || !admin.HasAdminAccess(db, user.Role, user.SchoolID) || user.SchoolID == nil {
 		return c.JSON(http.StatusForbidden, map[string]string{"error": "Unauthorized to view school reports"})
 	}
 

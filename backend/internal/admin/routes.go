@@ -5,25 +5,45 @@ import (
 	"office-file-sharing/backend/internal/shared/middleware"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 
 	"office-file-sharing/backend/internal/shared/models"
 )
 
+// FindRole finds a role by name, prioritizing the given tenant/school ID.
+func FindRole(db *gorm.DB, roleName string, schoolID *uuid.UUID) (*models.Role, error) {
+	var role models.Role
+	var err error
+	if schoolID != nil {
+		err = db.First(&role, "role_name = ? AND tenant_id = ?", roleName, *schoolID).Error
+	}
+	if schoolID == nil || err != nil {
+		err = db.First(&role, "role_name = ? AND tenant_id IS NULL", roleName).Error
+	}
+	if err != nil {
+		err = db.First(&role, "role_name = ?", roleName).Error
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &role, nil
+}
+
 // HasRole checks if the roleName inherits from targetRole in the tree hierarchy.
-func HasRole(db *gorm.DB, roleName string, targetRole string) bool {
+func HasRole(db *gorm.DB, roleName string, targetRole string, schoolID *uuid.UUID) bool {
 	if roleName == targetRole {
 		return true
 	}
 
-	var uRole models.Role
-	if err := db.First(&uRole, "role_name = ?", roleName).Error; err != nil {
+	uRole, err := FindRole(db, roleName, schoolID)
+	if err != nil {
 		return false
 	}
 
-	var tRole models.Role
-	if err := db.First(&tRole, "role_name = ?", targetRole).Error; err != nil {
+	tRole, err := FindRole(db, targetRole, schoolID)
+	if err != nil {
 		return false
 	}
 
@@ -31,17 +51,17 @@ func HasRole(db *gorm.DB, roleName string, targetRole string) bool {
 }
 
 // HasAdminAccess helper recursively checks if a role has administrative access.
-func HasAdminAccess(db *gorm.DB, roleName string) bool {
+func HasAdminAccess(db *gorm.DB, roleName string, schoolID *uuid.UUID) bool {
 	if roleName == "SuperAdmin" || roleName == "Admin" || roleName == "DHE" || roleName == "School Admin" {
 		return true
 	}
 
-	var role models.Role
-	if err := db.First(&role, "role_name = ?", roleName).Error; err != nil {
+	role, err := FindRole(db, roleName, schoolID)
+	if err != nil {
 		return false
 	}
 
-	curr := &role
+	curr := role
 	for curr != nil {
 		if curr.IsAdminAccess {
 			return true
@@ -73,7 +93,7 @@ func adminAccessMiddleware(db *gorm.DB) echo.MiddlewareFunc {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "User not found"})
 			}
 
-			if !HasAdminAccess(db, user.Role) {
+			if !HasAdminAccess(db, user.Role, user.SchoolID) {
 				return c.JSON(http.StatusForbidden, map[string]string{"error": "Access denied: Admin role required"})
 			}
 

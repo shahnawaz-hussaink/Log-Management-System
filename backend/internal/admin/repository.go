@@ -228,7 +228,7 @@ func (r *repository) UpdateSchool(school *models.School) error {
 
 func (r *repository) GetAllRoles(tenantID *string) ([]RoleResponse, error) {
 	var roles []models.Role
-	query := r.db.Preload("ParentRole").Order("role_name asc")
+	query := r.db.Preload("ParentRole").Preload("Tenant").Order("role_name asc")
 	if tenantID != nil {
 		query = query.Where("tenant_id IS NULL OR tenant_id = ?", *tenantID)
 	}
@@ -242,6 +242,10 @@ func (r *repository) GetAllRoles(tenantID *string) ([]RoleResponse, error) {
 		if role.ParentRole != nil {
 			parentName = role.ParentRole.RoleName
 		}
+		orgName := "System Level"
+		if role.Tenant != nil {
+			orgName = role.Tenant.Name
+		}
 		resp = append(resp, RoleResponse{
 			ID:             role.ID,
 			RoleName:       role.RoleName,
@@ -249,6 +253,7 @@ func (r *repository) GetAllRoles(tenantID *string) ([]RoleResponse, error) {
 			ParentRoleID:   role.ParentRoleID,
 			ParentRoleName: parentName,
 			TenantID:       role.TenantID,
+			OrgName:        orgName,
 			CreatedBy:      role.CreatedBy,
 			Path:           role.Path,
 			CreatedAt:      role.CreatedAt,

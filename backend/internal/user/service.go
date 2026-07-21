@@ -38,15 +38,15 @@ func (s *service) GetUsers(actorID uuid.UUID) ([]UserResponse, error) {
 			continue // skip self
 		}
 		// DHE or SuperAdmin or Admin sees everyone
-		if admin.HasAdminAccess(db, actor.Role) {
+		if admin.HasAdminAccess(db, actor.Role, actor.SchoolID) {
 			filtered = append(filtered, u)
-		} else if admin.HasRole(db, actor.Role, "School Admin") {
+		} else if admin.HasRole(db, actor.Role, "School Admin", actor.SchoolID) {
 			// School Admin sees:
 			// 1. Everyone in their own school
 			// 2. DHE / System Admin users (to escalate/forward system files)
 			// 3. Other School Admins (to forward/share documents across schools)
 			if (u.SchoolID != nil && actor.SchoolID != nil && *u.SchoolID == *actor.SchoolID) ||
-				admin.HasRole(db, u.Role, "DHE") || admin.HasRole(db, u.Role, "School Admin") {
+				admin.HasRole(db, u.Role, "DHE", u.SchoolID) || admin.HasRole(db, u.Role, "School Admin", u.SchoolID) {
 				filtered = append(filtered, u)
 			}
 		} else {

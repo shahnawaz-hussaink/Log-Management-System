@@ -113,6 +113,7 @@ type RoleResponse struct {
 	ParentRoleID   *uuid.UUID `json:"ParentRoleID"`
 	ParentRoleName string     `json:"ParentRoleName"`
 	TenantID       *uuid.UUID `json:"TenantID"`
+	OrgName        string     `json:"OrgName"`
 	CreatedBy      string     `json:"CreatedBy"`
 	Path           string     `json:"Path"`
 	CreatedAt      time.Time  `json:"CreatedAt"`

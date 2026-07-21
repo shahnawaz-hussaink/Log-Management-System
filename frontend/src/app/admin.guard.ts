@@ -12,7 +12,7 @@ export const adminGuard = () => {
   if (user) {
     const role = user.Role || user.role;
     console.log('adminGuard: detected role is', role);
-    if (role === 'Admin' || role === 'SuperAdmin' || role === 'DHE' || role === 'School Admin') {
+    if (user.isAdmin || role === 'Admin' || role === 'SuperAdmin' || role === 'DHE' || role === 'School Admin') {
       return true;
     }
   }

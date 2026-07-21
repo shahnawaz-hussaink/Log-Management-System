@@ -192,6 +192,7 @@
         <!-- Admin Specific Navigation Links -->
         <ng-container
           *ngIf="
+            user.isAdmin ||
             (user.Role || user.role) === 'Admin' ||
             (user.Role || user.role) === 'SuperAdmin' ||
             (user.Role || user.role) === 'DHE' ||
@@ -981,7 +982,8 @@
             (user.Role || user.role) === 'Admin' ||
             (user.Role || user.role) === 'SuperAdmin' ||
             (user.Role || user.role) === 'DHE' ||
-            (user.Role || user.role) === 'School Admin'
+            (user.Role || user.role) === 'School Admin' ||
+            user.isAdmin
           "
         >
           <button
