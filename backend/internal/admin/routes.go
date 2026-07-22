@@ -61,22 +61,7 @@ func HasAdminAccess(db *gorm.DB, roleName string, schoolID *uuid.UUID) bool {
 		return false
 	}
 
-	curr := role
-	for curr != nil {
-		if curr.IsAdminAccess {
-			return true
-		}
-		if curr.ParentRoleID == nil {
-			break
-		}
-		var parent models.Role
-		if err := db.First(&parent, "id = ?", *curr.ParentRoleID).Error; err != nil {
-			break
-		}
-		curr = &parent
-	}
-
-	return false
+	return role.IsAdminAccess
 }
 
 // adminAccessMiddleware ensures the user has the "Admin" role.

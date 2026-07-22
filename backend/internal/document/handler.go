@@ -313,9 +313,43 @@ func (h *Handler) TakeAction(c echo.Context) error {
 }
 
 func (h *Handler) GetDocumentTypes(c echo.Context) error {
+	authenticatedUserIDStr := c.Get("user_id").(string)
+	userID, _ := uuid.Parse(authenticatedUserIDStr)
+
+	var actor models.User
+	db := h.service.(*service).repo.(*repository).db
+	if err := db.First(&actor, "id = ?", userID).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to fetch user profile"})
+	}
+
+	var ancestorTenantIDs []uuid.UUID
+	if actor.SchoolID != nil {
+		ancestorTenantIDs = append(ancestorTenantIDs, *actor.SchoolID)
+
+		var currentOrg models.Organization
+		if err := db.First(&currentOrg, "tenant_id = ?", *actor.SchoolID).Error; err == nil {
+			parentID := currentOrg.ParentOrgID
+			for parentID != nil {
+				var pOrg models.Organization
+				if err := db.First(&pOrg, "id = ?", *parentID).Error; err != nil {
+					break
+				}
+				if pOrg.TenantID != nil {
+					ancestorTenantIDs = append(ancestorTenantIDs, *pOrg.TenantID)
+				}
+				parentID = pOrg.ParentOrgID
+			}
+		}
+	}
+
 	var list []models.DocumentType
-	// Fetch all active document types
-	err := h.service.(*service).repo.(*repository).db.Find(&list, "active = ?", true).Error
+	var err error
+	if len(ancestorTenantIDs) > 0 {
+		err = db.Where("active = ? AND (school_id IN ? OR school_id IS NULL)", true, ancestorTenantIDs).Find(&list).Error
+	} else {
+		err = db.Where("active = ? AND school_id IS NULL", true).Find(&list).Error
+	}
+
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to fetch document types"})
 	}

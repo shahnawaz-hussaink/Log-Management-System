@@ -59,24 +59,24 @@ type UpdateUserRequest struct {
 // ── Document Type Management ──────────────────────────────────────────────────
 
 type DocumentTypeResponse struct {
-	ID                uuid.UUID `json:"ID"`
-	SchoolID          uuid.UUID `json:"SchoolID"`
-	SchoolName        string    `json:"SchoolName"`
-	Name              string    `json:"Name"`
-	Slug              string    `json:"Slug"`
-	WorkflowStages    string    `json:"WorkflowStages"`
-	RequiredFields    string    `json:"RequiredFields"`
-	SlaHours          int       `json:"SlaHours"`
-	Active            bool      `json:"Active"`
+	ID                uuid.UUID  `json:"ID"`
+	SchoolID          *uuid.UUID `json:"SchoolID"`
+	SchoolName        string     `json:"SchoolName"`
+	Name              string     `json:"Name"`
+	Slug              string     `json:"Slug"`
+	WorkflowStages    string     `json:"WorkflowStages"`
+	RequiredFields    string     `json:"RequiredFields"`
+	SlaHours          int        `json:"SlaHours"`
+	Active            bool       `json:"Active"`
 }
 
 type CreateDocTypeRequest struct {
-	SchoolID          uuid.UUID `json:"school_id"`
-	Name              string    `json:"name"`
-	Slug              string    `json:"slug"`
-	WorkflowStages    string    `json:"workflow_stages"`
-	RequiredFields    string    `json:"required_fields"`
-	SlaHours          int       `json:"sla_hours"`
+	SchoolID          *uuid.UUID `json:"school_id"`
+	Name              string     `json:"name"`
+	Slug              string     `json:"slug"`
+	WorkflowStages    string     `json:"workflow_stages"`
+	RequiredFields    string     `json:"required_fields"`
+	SlaHours          int        `json:"sla_hours"`
 }
 
 type UpdateDocTypeRequest struct {

@@ -188,7 +188,7 @@ func (r *repository) GetDocumentTypeByID(id uuid.UUID) (*models.DocumentType, er
 
 func (r *repository) GetDocumentTypeBySlug(schoolID uuid.UUID, slug string) (*models.DocumentType, error) {
 	var dt models.DocumentType
-	err := r.db.First(&dt, "school_id = ? AND slug = ?", schoolID, slug).Error
+	err := r.db.First(&dt, "(school_id = ? OR school_id IS NULL) AND slug = ?", schoolID, slug).Error
 	if err != nil {
 		return nil, err
 	}

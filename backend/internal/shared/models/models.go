@@ -51,7 +51,7 @@ const (
 
 type DocumentType struct {
 	ID                uuid.UUID  `gorm:"type:uuid;primary_key;default:gen_random_uuid()"`
-	SchoolID          uuid.UUID  `gorm:"type:uuid;not null"`
+	SchoolID          *uuid.UUID `gorm:"type:uuid"`
 	Name              string     `gorm:"size:100;not null"`
 	Slug              string     `gorm:"size:100;not null"`
 	WorkflowStages    string     `gorm:"type:text;not null"` // JSON array of stages
@@ -61,8 +61,8 @@ type DocumentType struct {
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 
-	School      School `gorm:"foreignKey:SchoolID"`
-	CreatorRole *Role  `gorm:"foreignKey:CreatorRoleID"`
+	School      *School `gorm:"foreignKey:SchoolID"`
+	CreatorRole *Role   `gorm:"foreignKey:CreatorRoleID"`
 }
 
 type Document struct {

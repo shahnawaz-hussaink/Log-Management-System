@@ -166,7 +166,7 @@ func (s *service) Upload(uploaderID uuid.UUID, targetOwnerIDs []uuid.UUID, title
 	var docTypeID *uuid.UUID
 	var dt models.DocumentType
 	if schoolID != nil {
-		err = s.repo.(*repository).db.Preload("CreatorRole").Where("school_id = ? AND slug = ?", *schoolID, slug).First(&dt).Error
+		err = s.repo.(*repository).db.Preload("CreatorRole").Where("(school_id = ? OR school_id IS NULL) AND slug = ?", *schoolID, slug).First(&dt).Error
 		if err == nil {
 			if dt.CreatorRoleID != nil {
 				var uRole models.Role

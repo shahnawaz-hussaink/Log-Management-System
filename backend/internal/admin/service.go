@@ -385,10 +385,12 @@ func (s *service) GetAllDocumentTypes(actorRole string, actorSchoolID *uuid.UUID
 		visible := false
 		if actorRole == "SuperAdmin" {
 			visible = true
+		} else if dt.SchoolID == nil {
+			visible = true
 		} else {
 			// 1. Legacy/default scoping: no creator role set, but belongs to actor's school
 			if dt.CreatorRoleID == nil {
-				if actorSchoolID != nil && dt.SchoolID == *actorSchoolID {
+				if actorSchoolID != nil && *dt.SchoolID == *actorSchoolID {
 					visible = true
 				}
 			} else {
@@ -406,10 +408,14 @@ func (s *service) GetAllDocumentTypes(actorRole string, actorSchoolID *uuid.UUID
 		}
 
 		if visible {
+			schoolName := "Global (All Organizations)"
+			if dt.SchoolID != nil && dt.School.Name != "" {
+				schoolName = dt.School.Name
+			}
 			resp = append(resp, DocumentTypeResponse{
 				ID:             dt.ID,
 				SchoolID:       dt.SchoolID,
-				SchoolName:     dt.School.Name,
+				SchoolName:     schoolName,
 				Name:           dt.Name,
 				Slug:           dt.Slug,
 				WorkflowStages: dt.WorkflowStages,
@@ -467,9 +473,16 @@ func (s *service) CreateDocumentType(req CreateDocTypeRequest, actorRole string,
 		}
 	}
 
+	var schoolID *uuid.UUID
+	if req.SchoolID != nil && *req.SchoolID != uuid.Nil {
+		schoolID = req.SchoolID
+	} else if actorSchoolID != nil {
+		schoolID = actorSchoolID
+	}
+
 	dt := &models.DocumentType{
 		ID:             uuid.New(),
-		SchoolID:       req.SchoolID,
+		SchoolID:       schoolID,
 		Name:           req.Name,
 		Slug:           req.Slug,
 		WorkflowStages: req.WorkflowStages,
@@ -482,9 +495,17 @@ func (s *service) CreateDocumentType(req CreateDocTypeRequest, actorRole string,
 		return nil, err
 	}
 
+	schoolName := "Global (All Organizations)"
+	if dt.SchoolID != nil {
+		if s, err := s.repo.GetSchoolByID(*dt.SchoolID); err == nil && s != nil {
+			schoolName = s.Name
+		}
+	}
+
 	return &DocumentTypeResponse{
 		ID:             dt.ID,
 		SchoolID:       dt.SchoolID,
+		SchoolName:     schoolName,
 		Name:           dt.Name,
 		Slug:           dt.Slug,
 		WorkflowStages: dt.WorkflowStages,
@@ -532,15 +553,23 @@ func (s *service) UpdateDocumentType(id uuid.UUID, req UpdateDocTypeRequest) (*D
 		return nil, err
 	}
 
+	schoolName := "Global (All Organizations)"
+	if dt.SchoolID != nil {
+		if s, err := s.repo.GetSchoolByID(*dt.SchoolID); err == nil && s != nil {
+			schoolName = s.Name
+		}
+	}
+
 	return &DocumentTypeResponse{
-		ID:                dt.ID,
-		SchoolID:          dt.SchoolID,
-		Name:              dt.Name,
-		Slug:              dt.Slug,
-		WorkflowStages:    dt.WorkflowStages,
-		RequiredFields:    dt.RequiredFields,
-		SlaHours:          0,
-		Active:            dt.Active,
+		ID:             dt.ID,
+		SchoolID:       dt.SchoolID,
+		SchoolName:     schoolName,
+		Name:           dt.Name,
+		Slug:           dt.Slug,
+		WorkflowStages: dt.WorkflowStages,
+		RequiredFields: dt.RequiredFields,
+		SlaHours:       0,
+		Active:         dt.Active,
 	}, nil
 }
 
@@ -657,9 +686,38 @@ func (s *service) CreateRole(req CreateRoleRequest, actorRole string, actorSchoo
 		return nil, errors.New("unauthorized: actor role not found in system hierarchy")
 	}
 
+	newID := uuid.New()
+	var parentRoleID *uuid.UUID
+	var path string
+	var parentRole *models.Role
+
+	if actorRole == "SuperAdmin" {
+		if req.ParentRoleID != nil {
+			var err error
+			parentRole, err = s.repo.GetRoleByID(*req.ParentRoleID)
+			if err != nil {
+				return nil, errors.New("parent role not found")
+			}
+			parentRoleID = req.ParentRoleID
+			path = parentRole.Path + newID.String() + "/"
+		} else {
+			path = "/" + newID.String() + "/"
+		}
+	} else {
+		// Non-SuperAdmins: automatically parent to their own role
+		if !actorRoleRec.IsAdminAccess {
+			return nil, errors.New("cannot create role: administrative access (isAdminAccess = true) is required to create child roles")
+		}
+		parentRole = actorRoleRec
+		parentRoleID = &actorRoleRec.ID
+		path = actorRoleRec.Path + newID.String() + "/"
+	}
+
 	// Determine tenant scope
 	var targetTenantID *uuid.UUID
-	if actorRole == "SuperAdmin" {
+	if parentRole != nil && parentRole.TenantID != nil {
+		targetTenantID = parentRole.TenantID
+	} else if actorRole == "SuperAdmin" {
 		targetTenantID = req.TenantID
 	} else {
 		targetTenantID = actorSchoolID
@@ -678,30 +736,6 @@ func (s *service) CreateRole(req CreateRoleRequest, actorRole string, actorSchoo
 				return nil, errors.New("role name must be unique within this tenant scope")
 			}
 		}
-	}
-
-	newID := uuid.New()
-	var parentRoleID *uuid.UUID
-	var path string
-
-	if actorRole == "SuperAdmin" {
-		if req.ParentRoleID != nil {
-			parentRole, err := s.repo.GetRoleByID(*req.ParentRoleID)
-			if err != nil {
-				return nil, errors.New("parent role not found")
-			}
-			parentRoleID = req.ParentRoleID
-			path = parentRole.Path + newID.String() + "/"
-		} else {
-			path = "/" + newID.String() + "/"
-		}
-	} else {
-		// Non-SuperAdmins: automatically parent to their own role
-		if !actorRoleRec.IsAdminAccess {
-			return nil, errors.New("cannot create role: administrative access (isAdminAccess = true) is required to create child roles")
-		}
-		parentRoleID = &actorRoleRec.ID
-		path = actorRoleRec.Path + newID.String() + "/"
 	}
 
 	// Max tree depth check (10 levels)
@@ -840,10 +874,8 @@ func (s *service) UpdateRole(id uuid.UUID, req UpdateRoleRequest, actorRole stri
 				return nil, errors.New("circular hierarchy reference detected")
 			}
 
-			// Scoping check
-			if newParentRole.TenantID != nil && (role.TenantID == nil || *newParentRole.TenantID != *role.TenantID) {
-				return nil, errors.New("cannot parent role to another tenant's role")
-			}
+			// Inherit organization from parent role
+			role.TenantID = newParentRole.TenantID
 
 			oldPath := role.Path
 			newPath := newParentRole.Path + role.ID.String() + "/"
@@ -858,13 +890,14 @@ func (s *service) UpdateRole(id uuid.UUID, req UpdateRoleRequest, actorRole stri
 			role.Path = newPath
 			parentChanged = true
 
-			// Cascade path update to all descendants recursively
+			// Cascade path and TenantID update to all descendants recursively
 			repoImpl, ok := s.repo.(*repository)
 			if ok {
 				var descendants []models.Role
 				if err := repoImpl.db.Where("path LIKE ?", oldPath+"%").Find(&descendants).Error; err == nil {
 					for _, desc := range descendants {
 						desc.Path = strings.Replace(desc.Path, oldPath, newPath, 1)
+						desc.TenantID = role.TenantID
 						repoImpl.db.Save(&desc)
 					}
 				}
@@ -889,6 +922,7 @@ func (s *service) UpdateRole(id uuid.UUID, req UpdateRoleRequest, actorRole stri
 			if err := repoImpl.db.Where("path LIKE ?", oldPath+"%").Find(&descendants).Error; err == nil {
 				for _, desc := range descendants {
 					desc.Path = strings.Replace(desc.Path, oldPath, newPath, 1)
+					desc.TenantID = role.TenantID
 					repoImpl.db.Save(&desc)
 				}
 			}

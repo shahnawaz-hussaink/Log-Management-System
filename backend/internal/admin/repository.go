@@ -148,7 +148,7 @@ func (r *repository) GetAllDocumentTypes(schoolID *string) ([]DocumentTypeRespon
 	var docTypes []models.DocumentType
 	query := r.db.Preload("School").Order("name asc")
 	if schoolID != nil {
-		query = query.Where("school_id = ?", *schoolID)
+		query = query.Where("school_id = ? OR school_id IS NULL", *schoolID)
 	}
 	if err := query.Find(&docTypes).Error; err != nil {
 		return nil, err
@@ -156,10 +156,14 @@ func (r *repository) GetAllDocumentTypes(schoolID *string) ([]DocumentTypeRespon
 
 	var resp []DocumentTypeResponse
 	for _, dt := range docTypes {
+		schoolName := "Global (All Organizations)"
+		if dt.School != nil && dt.School.Name != "" {
+			schoolName = dt.School.Name
+		}
 		resp = append(resp, DocumentTypeResponse{
 			ID:                dt.ID,
 			SchoolID:          dt.SchoolID,
-			SchoolName:        dt.School.Name,
+			SchoolName:        schoolName,
 			Name:              dt.Name,
 			Slug:              dt.Slug,
 			WorkflowStages:    dt.WorkflowStages,

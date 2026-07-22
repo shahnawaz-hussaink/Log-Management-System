@@ -2,7 +2,6 @@ package user
 
 import (
 	"github.com/google/uuid"
-	"office-file-sharing/backend/internal/admin"
 	"office-file-sharing/backend/internal/shared/models"
 )
 
@@ -32,27 +31,122 @@ func (s *service) GetUsers(actorID uuid.UUID) ([]UserResponse, error) {
 		return nil, err
 	}
 
+	// Load admin roles map
+	var adminRoles []models.Role
+	db.Where("is_admin_access = ?", true).Find(&adminRoles)
+	adminRolesMap := make(map[string]bool)
+	for _, r := range adminRoles {
+		adminRolesMap[r.RoleName] = true
+	}
+
+	isAdminRole := func(roleName string) bool {
+		if roleName == "SuperAdmin" || roleName == "Admin" || roleName == "DHE" || roleName == "School Admin" {
+			return true
+		}
+		return adminRolesMap[roleName]
+	}
+
+	// Resolve actor's organization hierarchy
+	var actorOrg models.Organization
+	var siblingTenantIDs []uuid.UUID
+	var parentTenantID *uuid.UUID
+	var childTenantIDs []uuid.UUID
+
+	if actor.SchoolID != nil {
+		if err := db.First(&actorOrg, "tenant_id = ?", *actor.SchoolID).Error; err == nil {
+			// Sibling and Parent Tenant IDs
+			if actorOrg.ParentOrgID != nil {
+				var siblingOrgs []models.Organization
+				db.Find(&siblingOrgs, "parent_org_id = ? AND id != ?", *actorOrg.ParentOrgID, actorOrg.ID)
+				for _, o := range siblingOrgs {
+					if o.TenantID != nil {
+						siblingTenantIDs = append(siblingTenantIDs, *o.TenantID)
+					}
+				}
+
+				var parentOrg models.Organization
+				if err := db.First(&parentOrg, "id = ?", *actorOrg.ParentOrgID).Error; err == nil {
+					parentTenantID = parentOrg.TenantID
+				}
+			}
+
+			// Child Tenant IDs
+			var childOrgs []models.Organization
+			db.Find(&childOrgs, "parent_org_id = ?", actorOrg.ID)
+			for _, o := range childOrgs {
+				if o.TenantID != nil {
+					childTenantIDs = append(childTenantIDs, *o.TenantID)
+				}
+			}
+		}
+	}
+
 	var filtered []models.User
 	for _, u := range allUsers {
 		if u.ID == actorID {
 			continue // skip self
 		}
-		// DHE or SuperAdmin or Admin sees everyone
-		if admin.HasAdminAccess(db, actor.Role, actor.SchoolID) {
+
+		// SuperAdmin / Admin can see everyone
+		if actor.Role == "SuperAdmin" || actor.Role == "Admin" {
 			filtered = append(filtered, u)
-		} else if admin.HasRole(db, actor.Role, "School Admin", actor.SchoolID) {
-			// School Admin sees:
-			// 1. Everyone in their own school
-			// 2. DHE / System Admin users (to escalate/forward system files)
-			// 3. Other School Admins (to forward/share documents across schools)
-			if (u.SchoolID != nil && actor.SchoolID != nil && *u.SchoolID == *actor.SchoolID) ||
-				admin.HasRole(db, u.Role, "DHE", u.SchoolID) || admin.HasRole(db, u.Role, "School Admin", u.SchoolID) {
-				filtered = append(filtered, u)
-			}
-		} else {
-			// Everyone else sees people in their own school/office
-			if u.SchoolID != nil && actor.SchoolID != nil && *u.SchoolID == *actor.SchoolID {
-				filtered = append(filtered, u)
+			continue
+		}
+
+		// Target user is a System-level Admin (SuperAdmin / Admin), they should be visible to any admin
+		if (u.Role == "SuperAdmin" || u.Role == "Admin") && isAdminRole(actor.Role) {
+			filtered = append(filtered, u)
+			continue
+		}
+
+		// Everyone can see colleagues in their own organization
+		if u.SchoolID != nil && actor.SchoolID != nil && *u.SchoolID == *actor.SchoolID {
+			filtered = append(filtered, u)
+			continue
+		}
+
+		// If actor is an Admin of their organization (point of contact), they can see:
+		// 1. Sibling organization admins (same level)
+		// 2. Parent organization admins (upstream)
+		// 3. Child organization admins (downstream)
+		if actor.SchoolID != nil && isAdminRole(actor.Role) {
+			isTargetAdmin := isAdminRole(u.Role)
+			if isTargetAdmin {
+				// Sibling check
+				if len(siblingTenantIDs) > 0 && u.SchoolID != nil {
+					isSibling := false
+					for _, tid := range siblingTenantIDs {
+						if *u.SchoolID == tid {
+							isSibling = true
+							break
+						}
+					}
+					if isSibling {
+						filtered = append(filtered, u)
+						continue
+					}
+				}
+
+				// Parent check
+				if parentTenantID != nil && u.SchoolID != nil && *u.SchoolID == *parentTenantID {
+					filtered = append(filtered, u)
+					continue
+				}
+
+				// Child check
+				if len(childTenantIDs) > 0 && u.SchoolID != nil {
+					isChild := false
+					for _, tid := range childTenantIDs {
+						if *u.SchoolID == tid {
+							isChild = true
+							break
+						}
+					}
+					if isChild {
+						filtered = append(filtered, u)
+						continue
+					}
+				}
 			}
 		}
 	}

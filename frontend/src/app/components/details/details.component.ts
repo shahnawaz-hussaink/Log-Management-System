@@ -89,7 +89,7 @@ export class DetailsComponent implements OnInit {
         const currentId = this.currentUser?.ID || this.currentUser?.id;
         const currentRole = this.currentUser?.Role || this.currentUser?.role;
         const currentSchoolId = this.currentUser?.SchoolID || this.currentUser?.school_id;
-        const canSeeAll = currentRole === 'School Admin' || currentRole === 'SuperAdmin' || currentRole === 'Admin' || currentRole === 'DHE';
+        const canSeeAll = this.currentUser?.isAdmin || currentRole === 'School Admin' || currentRole === 'SuperAdmin' || currentRole === 'Admin' || currentRole === 'DHE';
         
         this.users = res.filter(u => {
           if ((u.id || u.ID) === currentId) return false;
