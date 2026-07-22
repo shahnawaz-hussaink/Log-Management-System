@@ -108,7 +108,8 @@ export class CreateFileComponent implements OnInit {
     this.api.createFile(titleTrimmed, this.description, this.category, this.subCategory, this.priority).subscribe({
       next: (res: any) => {
         this.loading = false;
-        this.router.navigate(['/dashboard']);
+        const fileId = res.ID || res.id;
+        this.router.navigate(['/details', fileId], { queryParams: { type: 'file' } });
       },
       error: (err: any) => {
         this.loading = false;
