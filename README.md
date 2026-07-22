@@ -159,18 +159,27 @@ The database is pre-seeded with mock users. You can log in on the login screen b
 
 ## Key Features Implemented
 
-1. **Document Actions**: Approve, Reject, and Send Back for Revision.
-2. **Resubmit or Replace**:
+1. **Receipts (Inward Documents) & Files (Noting Sheets)**:
+   - Dual-mode workflow workspace supporting standard inward receipts and official file noting sheets.
+2. **Noting Sheet Collaboration (Green & Yellow Notes)**:
+   - **Yellow Notes (Drafts)**: Collaborative, editable draft notes that can be edited by the author or finalized.
+   - **Green Notes (Official)**: Permanent, un-editable official notes stamped with electronic signatures.
+3. **Point of Contact (PoC) Sibling & Parent Routing**:
+   - Administrative point-of-contacts can forward files up to parent organizations or across to sibling organizations.
+   - Role-based boundaries restrict standard staff visibility to their own organization while admins serve as gateway points of contact.
+4. **Document Actions**: Approve, Reject, and Send Back for Revision.
+5. **Resubmit or Replace**:
    - Uploaders can replace a document that was sent back.
    - Alternatively, they can **resubmit with comments** without modifying the original file.
-3. **Workflow Timeline**: Complete action tracking shown chronologically on a vertical history timeline.
-4. **Document Previews (PDF & DOCX)**: 
+6. **Workflow Timeline**: Complete action tracking shown chronologically on a vertical history timeline.
+7. **Document Previews (PDF & DOCX)**: 
    - Embeds an inline browser-native PDF viewer dynamically using `DomSanitizer` inside the document details page.
    - Embeds a client-side DOCX document viewer using the `docx-preview` library.
-5. **Action Stamp Tokens**: Generates and overlays a secure, verifiable transaction token (e.g. `SIG-TX-XXXX`) automatically when an action (Approve/Reject) is completed.
-6. **Separate Admin Dashboard (`/admin`)**: A centralized, secure console for school administrators allowing:
+8. **Action Stamp Tokens**: Generates and overlays a secure, verifiable transaction token (e.g. `SIG-TX-XXXX`) automatically when an action (Approve/Reject) is completed.
+9. **Separate Admin Panel**: A centralized, secure console for school administrators allowing:
    - System stats oversight (users, documents, SLA metrics).
    - CRUD management for users and class settings.
    - CRUD management for document categories and workflow rules.
    - School settings adjustments.
+10. **Forwarded Inbox Sections**: Segregates active received inbox documents from previously acted-upon/forwarded items for better workflow visibility.
 
