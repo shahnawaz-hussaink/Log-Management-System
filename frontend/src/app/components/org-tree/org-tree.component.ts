@@ -86,7 +86,6 @@ export class OrgTreeComponent implements OnInit {
   buildTree() {
     const nodeMap = new Map<string, OrgNode>();
 
-    // Create a node for each organization
     for (const org of this.allOrgs) {
       const school = this.allSchools.find(
         (s: any) => s.ID === org.TenantID || s.ID === org.ID
@@ -95,18 +94,17 @@ export class OrgTreeComponent implements OnInit {
       nodeMap.set(org.ID, {
         id: org.ID,
         name: org.OrganizationName,
-        type: org.Type,
+        type: org.Type || 'default',
         activeState: org.ActiveState,
         parentOrgID: org.ParentOrgID || null,
         pointOfContact: org.PointOfContact || null,
         tenantID: org.TenantID || null,
         school: school,
         children: [],
-        expanded: true, // Default to expanded
+        expanded: true,
       });
     }
 
-    // Wire up parent-child relationships
     const roots: OrgNode[] = [];
     for (const node of nodeMap.values()) {
       if (node.parentOrgID && nodeMap.has(node.parentOrgID)) {
@@ -117,6 +115,11 @@ export class OrgTreeComponent implements OnInit {
     }
 
     this.rootNodes = roots;
+  }
+
+  isActive(state: string | null | undefined): boolean {
+    if (!state) return true;
+    return state.toLowerCase() === 'active';
   }
 
   toggleExpanded(node: OrgNode, event: Event) {
@@ -144,7 +147,7 @@ export class OrgTreeComponent implements OnInit {
     for (const c of node.children) count += this.countDescendants(c);
     return count;
   }
-  
+
   trackById(index: number, item: any): string {
     return item.id;
   }
