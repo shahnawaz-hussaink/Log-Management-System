@@ -604,6 +604,16 @@
         &larr; Back to Dashboard
       </button>
 
+      <!-- Centered File Info -->
+      <div class="flex-1 text-center">
+        <h1 class="text-xl sm:text-2xl font-extrabold text-[var(--text-primary)] my-0">
+          {{ file.Title }}
+        </h1>
+        <span class="inline-block mt-1 text-xs sm:text-sm font-black text-blue-700 bg-blue-50 dark:bg-blue-950/40 border border-blue-200/50 px-3.5 py-1 rounded uppercase tracking-wide shadow-sm">
+          {{ file.FileNumber }}
+        </span>
+      </div>
+
       <!-- Workspace / Activity Tabs -->
       <div
         class="flex items-center gap-1 bg-[var(--surface)] border border-[var(--border)]/30 rounded-xl p-1 self-start sm:self-auto shadow-sm"
@@ -924,11 +934,6 @@
             </p>
           </div>
           <div class="flex items-center gap-2">
-            <span
-              class="text-xs px-2.5 py-0.5 rounded font-bold uppercase border bg-slate-100 text-slate-700 border-slate-200"
-            >
-              {{ file.FileNumber }}
-            </span>
             <span
               class="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border"
               [ngClass]="{
