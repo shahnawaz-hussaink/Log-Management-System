@@ -386,9 +386,10 @@ export class AdminComponent implements OnInit {
   openCreateDocType() {
     this.editingDocType = null;
     this.docTypeForm = {
-      name: '', slug: '', workflow_stages: '[]', required_fields: '[]',
-      sla_hours: 72,  active: true,
-      school_id: null
+      name: '', slug: '',
+      workflow_stages: '[]', required_fields: '[]',
+      sla_hours: 72, active: true,
+      school_id: null   // always global — inherited by all child orgs
     };
     this.docTypeError = '';
     this.showDocTypeModal = true;
@@ -399,12 +400,11 @@ export class AdminComponent implements OnInit {
     this.docTypeForm = {
       name: dt.Name,
       slug: dt.Slug,
-      workflow_stages: dt.WorkflowStages,
-      required_fields: dt.RequiredFields,
+      workflow_stages: dt.WorkflowStages || '[]',
+      required_fields: dt.RequiredFields || '[]',
       sla_hours: dt.SlaHours,
-      needs_parent_cosign: dt.needs_parent_cosign,
       active: dt.Active,
-      school_id: dt.SchoolID
+      school_id: null   // always global — inherited by all child orgs
     };
     this.docTypeError = '';
     this.showDocTypeModal = true;
@@ -417,32 +417,8 @@ export class AdminComponent implements OnInit {
       return;
     }
 
-    // Validate JSON input structures
-    try {
-      if (this.docTypeForm.workflow_stages) {
-        const parsed = JSON.parse(this.docTypeForm.workflow_stages);
-        if (!Array.isArray(parsed)) {
-          this.docTypeError = 'Workflow Stages must be a valid JSON array, e.g. [{"stage":1,"role":"Teacher","label":"Teacher"}].';
-          return;
-        }
-      }
-    } catch (e) {
-      this.docTypeError = 'Workflow Stages is not valid JSON.';
-      return;
-    }
-
-    try {
-      if (this.docTypeForm.required_fields) {
-        const parsed = JSON.parse(this.docTypeForm.required_fields);
-        if (!Array.isArray(parsed)) {
-          this.docTypeError = 'Required Fields must be a valid JSON array, e.g. ["from_date","reason"].';
-          return;
-        }
-      }
-    } catch (e) {
-      this.docTypeError = 'Required Fields is not valid JSON.';
-      return;
-    }
+    // Ensure school_id is always null so the type is global and inherited by all orgs
+    this.docTypeForm.school_id = null;
 
     if (!this.docTypeForm.slug) {
       this.docTypeForm.slug = this.docTypeForm.name.toLowerCase().replace(/\s+/g, '-');

@@ -398,6 +398,26 @@
               </svg>
               <span *ngIf="!isSidebarCollapsed">Role Management</span>
             </button>
+
+            <!-- Org Tree (SuperAdmin only) -->
+            <button
+              *ngIf="(user.Role || user.role) === 'SuperAdmin'"
+              class="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold rounded-lg transition-all border-0 cursor-pointer text-left bg-transparent"
+              [class.bg-[var(--primary-light)]]="router.url === '/admin/org-tree'"
+              [class.text-[var(--primary-active)]]="router.url === '/admin/org-tree'"
+              [class.text-[var(--text-secondary)]]="router.url !== '/admin/org-tree'"
+              [class.hover:bg-[var(--background)]]="router.url !== '/admin/org-tree'"
+              (click)="router.navigate(['/admin/org-tree'])"
+              [title]="isSidebarCollapsed ? 'Organization Tree' : ''"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="w-4.5 h-4.5 flex-shrink-0">
+                <path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/>
+                <path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/>
+              </svg>
+              <span *ngIf="!isSidebarCollapsed">Org Tree</span>
+            </button>
           </div>
         </ng-container>
 

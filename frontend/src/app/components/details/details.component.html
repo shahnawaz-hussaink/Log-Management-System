@@ -57,19 +57,19 @@
               </p>
             </div>
             <span
-              class="px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border flex-shrink-0"
+              class="px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border text-center leading-tight"
               [ngClass]="{
-                'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-455 border-amber-200 dark:border-amber-900/30':
+                'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800':
                   document.Status === 'Pending Approval' ||
                   document.Status === 'Draft' ||
                   document.Status === 'Sent Back',
-                'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-455 border-emerald-200 dark:border-emerald-900/30':
+                'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800':
                   document.Status === 'Approved',
-                'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-455 border-rose-200 dark:border-rose-900/30':
+                'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-300 dark:border-rose-800':
                   document.Status === 'Rejected',
                 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700':
                   document.Status === 'Closed',
-                'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-455 border-blue-200 dark:border-blue-900/30':
+                'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-800':
                   document.Status === 'Archived',
               }"
               >{{ document.Status }}</span
@@ -205,37 +205,41 @@
               >
                 Forward
               </button>
-              <button
-                class="app-btn-primary bg-[var(--warning)] hover:bg-amber-600 border-0 flex-1 sm:flex-initial cursor-pointer"
-                (click)="submitAction('Sent Back')"
-              >
-                Send Back for Revision
-              </button>
+              <!-- Send Back / Reject: hidden for receipts (Inward documents) -->
+              <ng-container *ngIf="document.Direction !== 'Inward'">
+                <button
+                  class="app-btn-primary bg-[var(--warning)] hover:bg-amber-600 border-0 flex-1 sm:flex-initial cursor-pointer"
+                  (click)="submitAction('Sent Back')"
+                >
+                  Send Back for Revision
+                </button>
 
-              <!-- Close authority -->
-              <button
-                *ngIf="
-                  currentUser.Role === 'Principal' ||
-                  currentUser.Role === 'Teacher'
-                "
-                class="app-btn-primary bg-slate-600 hover:bg-slate-700 border-0 flex-1 sm:flex-initial cursor-pointer"
-                (click)="submitAction('Close')"
-              >
-                Close File
-              </button>
+                <!-- Close authority -->
+                <button
+                  *ngIf="
+                    currentUser.Role === 'Principal' ||
+                    currentUser.Role === 'Teacher'
+                  "
+                  class="app-btn-primary bg-slate-600 hover:bg-slate-700 border-0 flex-1 sm:flex-initial cursor-pointer"
+                  (click)="submitAction('Close')"
+                >
+                  Close File
+                </button>
 
-              <button
-                class="app-btn-primary bg-[var(--danger)] hover:bg-rose-600 border-0 flex-1 sm:flex-initial cursor-pointer"
-                (click)="submitAction('Rejected')"
-              >
-                Reject Final
-              </button>
+                <button
+                  class="app-btn-primary bg-[var(--danger)] hover:bg-rose-600 border-0 flex-1 sm:flex-initial cursor-pointer"
+                  (click)="submitAction('Rejected')"
+                >
+                  Reject Final
+                </button>
+              </ng-container>
             </div>
           </div>
 
-          <!-- Replace / Resubmit File Panel if Sent Back -->
+          <!-- Replace / Resubmit File Panel if Sent Back (not for receipts) -->
           <div
             *ngIf="
+              document.Direction !== 'Inward' &&
               document.Status === 'Sent Back' &&
               (document.UploaderID || '').toLowerCase() ===
                 (currentUser.ID || currentUser.id || '').toLowerCase()

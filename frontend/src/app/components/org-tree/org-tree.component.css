@@ -1,0 +1,300 @@
+/* ═══════════════════════════════════════════
+   Page Shell & Typography
+═══════════════════════════════════════════ */
+.ot-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #0f172a;
+}
+
+/* ═══════════════════════════════════════════
+   Top Bar
+═══════════════════════════════════════════ */
+.ot-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ot-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.ot-title { font-size: 20px; font-weight: 700; margin: 0; line-height: 1.2; }
+.ot-subtitle { font-size: 13px; color: #64748b; margin: 4px 0 0; }
+
+.ot-topbar-right {
+  display: flex;
+  gap: 12px;
+}
+
+/* Buttons */
+.ot-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+.ot-btn-outline { background: transparent; border: 1px solid #cbd5e1; color: #475569; }
+.ot-btn-outline:hover { background: #f1f5f9; color: #0f172a; }
+.ot-btn-ghost { background: transparent; color: #3b82f6; }
+.ot-btn-ghost:hover { background: #eff6ff; }
+.ot-btn-primary { background: #2563eb; color: #ffffff; }
+.ot-btn-primary:hover { background: #1d4ed8; }
+
+/* ═══════════════════════════════════════════
+   Stats Bar
+═══════════════════════════════════════════ */
+.ot-stats-bar {
+  display: flex;
+  background: linear-gradient(to right, #1e3a8a, #3b82f6);
+  padding: 0 32px;
+  color: white;
+}
+
+.ot-stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 16px 24px;
+}
+
+.ot-stat-value { font-size: 24px; font-weight: 800; line-height: 1; }
+.ot-stat-label {
+  font-size: 12px; font-weight: 500; opacity: 0.8;
+  margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em;
+}
+
+.ot-stat-divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 16px 0;
+}
+
+/* ═══════════════════════════════════════════
+   Canvas & Loading States
+═══════════════════════════════════════════ */
+.ot-canvas {
+  padding: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.ot-state-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.ot-spinner {
+  width: 40px; height: 40px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.ot-empty-icon { font-size: 48px; margin-bottom: 16px; }
+
+/* ═══════════════════════════════════════════
+   Tree Branch Geometry (The Magic)
+═══════════════════════════════════════════ */
+.ot-tree-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* The wrapper that holds child nodes */
+.ot-tree-children {
+  /* Aligns the vertical drop line with the exact center of the 44px parent icon */
+  margin-left: 22px; 
+}
+
+/* Individual node (including lines) */
+.ot-tree-node {
+  position: relative;
+  padding-left: 32px;  /* Length of the horizontal connecting branch */
+  padding-top: 12px;   /* Spacing between siblings */
+}
+
+/* 1) The Horizontal Branch (Connects from vertical line to the child card) */
+.ot-tree-node::before {
+  content: '';
+  position: absolute;
+  /* Drops down to the vertical center of the card's header */
+  top: 50px; 
+  left: 0;
+  width: 32px;
+  border-top: 2px solid #cbd5e1;
+}
+
+/* 2) The Vertical Trunk (Drops down to connect siblings) */
+.ot-tree-node::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-left: 2px solid #cbd5e1;
+}
+
+/* 3) Fix the Last Child: Cut the vertical line off at the horizontal branch */
+.ot-tree-node:last-child::after {
+  height: 50px; 
+  bottom: auto;
+}
+
+/* 4) Root Nodes don't get branch lines */
+.ot-tree-root > .ot-tree-node {
+  padding-left: 0;
+  padding-top: 0;
+}
+.ot-tree-root > .ot-tree-node::before,
+.ot-tree-root > .ot-tree-node::after {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════
+   Org Card Styles
+═══════════════════════════════════════════ */
+.ot-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s, border-color 0.2s;
+  position: relative;
+  z-index: 2; /* Keep card on top of background lines */
+}
+
+.ot-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e1;
+}
+
+.ot-card-inactive {
+  opacity: 0.6;
+  background: #f1f5f9;
+}
+
+.ot-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  user-select: none;
+}
+.ot-card-header:hover { background: #fafaf9; }
+
+.ot-card-left { display: flex; align-items: center; gap: 16px; }
+
+/* Icons */
+.ot-type-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.ot-type-district   { background: #ede9fe; }
+.ot-type-school     { background: #dcfce7; }
+.ot-type-department { background: #fef9c3; }
+.ot-type-cluster    { background: #ffedd5; }
+.ot-type-block      { background: #fee2e2; }
+.ot-type-division   { background: #e0f2fe; }
+.ot-type-default    { background: #f1f5f9; }
+
+/* Card Typography */
+.ot-card-name { font-size: 16px; font-weight: 700; color: #0f172a; }
+.ot-card-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+
+/* Right Section */
+.ot-card-right { display: flex; align-items: center; gap: 24px; }
+
+.ot-poc { display: flex; align-items: center; gap: 12px; }
+.ot-poc-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #e2e8f0; color: #475569; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.ot-poc-name { font-size: 14px; font-weight: 600; color: #334155; }
+.ot-poc-role { font-size: 12px; color: #64748b; }
+
+.ot-toggle-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.ot-toggle-btn:hover { color: #0f172a; }
+.ot-toggle-btn svg { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* Tenant Banner */
+.ot-tenant-banner {
+  background: #f0f9ff;
+  border-top: 1px solid #e0f2fe;
+  padding: 10px 20px;
+  font-size: 13px;
+  color: #0369a1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════════
+   Badges
+═══════════════════════════════════════════ */
+.ot-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* Matching badge colors to icons */
+.ot-badge-district   { background: #ede9fe; color: #6d28d9; }
+.ot-badge-school     { background: #dcfce7; color: #15803d; }
+.ot-badge-department { background: #fef9c3; color: #a16207; }
+.ot-badge-cluster    { background: #ffedd5; color: #c2410c; }
+.ot-badge-block      { background: #fee2e2; color: #b91c1c; }
+.ot-badge-division   { background: #e0f2fe; color: #0369a1; }
+.ot-badge-default    { background: #f1f5f9; color: #475569; }
+
+/* Status Badges */
+.ot-badge-green  { background: #dcfce7; color: #166534; }
+.ot-badge-red    { background: #fee2e2; color: #991b1b; }
+.ot-badge-slate  { background: #f1f5f9; color: #475569; }

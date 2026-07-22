@@ -9,6 +9,7 @@ import { AdminComponent } from './components/admin/admin.component';
 import { HistoryComponent } from './components/history/history.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
+import { OrgTreeComponent } from './components/org-tree/org-tree.component';
 import { authGuard } from './auth.guard';
 import { guestGuard } from './guest.guard';
 import { adminGuard } from './admin.guard';
@@ -29,6 +30,7 @@ export const routes: Routes = [
   { path: 'admin/schools',  component: AdminComponent,     canActivate: [authGuard, adminGuard] },
   { path: 'admin/doctypes', component: AdminComponent,     canActivate: [authGuard, adminGuard] },
   { path: 'admin/roles',    component: AdminComponent,     canActivate: [authGuard, adminGuard] },
+  { path: 'admin/org-tree', component: OrgTreeComponent,  canActivate: [authGuard, adminGuard] },
   // Wildcard 404 Route
   { path: '**',         component: NotFoundComponent }
 ];

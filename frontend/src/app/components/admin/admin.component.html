@@ -726,29 +726,12 @@
             <input id="admin-dt-slug" type="text" [(ngModel)]="docTypeForm.slug" placeholder="">
           </div>
         </div>
-        <div class="form-group" *ngIf="isSuperAdmin">
-          <label for="admin-dt-school">School/Organization</label>
-          <select id="admin-dt-school" [(ngModel)]="docTypeForm.school_id">
-            <option [ngValue]="null">— Global (All Organizations) —</option>
-            <option *ngFor="let s of schools" [value]="s.ID">{{ s.Name }}</option>
-          </select>
-        </div>
         <div class="form-group">
           <label for="admin-dt-active">Status</label>
           <select id="admin-dt-active" [(ngModel)]="docTypeForm.active">
             <option [ngValue]="true">Active</option>
             <option [ngValue]="false">Inactive</option>
           </select>
-        </div>
-        <div class="form-group">
-          <label for="admin-dt-stages">Workflow Stages (JSON)</label>
-          <textarea id="admin-dt-stages" [(ngModel)]="docTypeForm.workflow_stages"
-            placeholder='[{"stage":1,"role":"Teacher","label":"Class Teacher"}]'></textarea>
-        </div>
-        <div class="form-group">
-          <label for="admin-dt-fields">Required Fields (JSON)</label>
-          <textarea id="admin-dt-fields" [(ngModel)]="docTypeForm.required_fields"
-            placeholder='["from_date","to_date","reason"]'></textarea>
         </div>
       </div>
       <div class="modal-footer">
