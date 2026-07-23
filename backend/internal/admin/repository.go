@@ -57,11 +57,74 @@ func (r *repository) GetStats(schoolID *string) (*SystemStats, error) {
 	dtQuery := r.db.Model(&models.DocumentType{})
 	schoolQuery := r.db.Model(&models.School{})
 
+	var allowedSchoolIDs []uuid.UUID
 	if schoolID != nil {
-		userQuery = userQuery.Where("school_id = ?", *schoolID)
-		docQuery = docQuery.Where("school_id = ?", *schoolID)
-		dtQuery = dtQuery.Where("school_id = ?", *schoolID)
-		schoolQuery = schoolQuery.Where("id = ?", *schoolID)
+		parsedSchoolID, err := uuid.Parse(*schoolID)
+		if err == nil {
+			allowedSchoolIDs = append(allowedSchoolIDs, parsedSchoolID)
+
+			// Find actor's organization record to resolve hierarchy
+			var actorOrg models.Organization
+			if err := r.db.Where("tenant_id = ?", parsedSchoolID).First(&actorOrg).Error; err == nil {
+				// Retrieve all organizations to build the hierarchy
+				var allOrgs []models.Organization
+				if err := r.db.Find(&allOrgs).Error; err == nil {
+					parentToChildren := make(map[uuid.UUID][]models.Organization)
+					for _, o := range allOrgs {
+						if o.ParentOrgID != nil {
+							parentToChildren[*o.ParentOrgID] = append(parentToChildren[*o.ParentOrgID], o)
+						}
+					}
+
+					var queue []uuid.UUID
+					queue = append(queue, actorOrg.ID)
+					visited := make(map[uuid.UUID]bool)
+					visited[actorOrg.ID] = true
+
+					for len(queue) > 0 {
+						currID := queue[0]
+						queue = queue[1:]
+
+						children := parentToChildren[currID]
+						for _, child := range children {
+							if !visited[child.ID] {
+								visited[child.ID] = true
+								queue = append(queue, child.ID)
+								if child.TenantID != nil {
+									allowedSchoolIDs = append(allowedSchoolIDs, *child.TenantID)
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	var schoolCountIDs []uuid.UUID
+	if schoolID != nil {
+		parsedSchoolID, err := uuid.Parse(*schoolID)
+		if err == nil {
+			for _, id := range allowedSchoolIDs {
+				if id != parsedSchoolID {
+					schoolCountIDs = append(schoolCountIDs, id)
+				}
+			}
+		}
+	}
+
+	if schoolID != nil {
+		if len(allowedSchoolIDs) > 0 {
+			userQuery = userQuery.Where("school_id IN ?", allowedSchoolIDs)
+			docQuery = docQuery.Where("school_id IN ?", allowedSchoolIDs)
+			dtQuery = dtQuery.Where("school_id IN ?", allowedSchoolIDs)
+			schoolQuery = schoolQuery.Where("id IN ?", schoolCountIDs)
+		} else {
+			userQuery = userQuery.Where("school_id = ?", *schoolID)
+			docQuery = docQuery.Where("school_id = ?", *schoolID)
+			dtQuery = dtQuery.Where("school_id = ?", *schoolID)
+			schoolQuery = schoolQuery.Where("id = ?", *schoolID)
+		}
 	}
 
 	userQuery.Count(&stats.TotalUsers)
@@ -71,19 +134,31 @@ func (r *repository) GetStats(schoolID *string) (*SystemStats, error) {
 
 	docQueryPending := r.db.Model(&models.Document{}).Where("status = ?", models.StatusPendingApproval)
 	if schoolID != nil {
-		docQueryPending = docQueryPending.Where("school_id = ?", *schoolID)
+		if len(allowedSchoolIDs) > 0 {
+			docQueryPending = docQueryPending.Where("school_id IN ?", allowedSchoolIDs)
+		} else {
+			docQueryPending = docQueryPending.Where("school_id = ?", *schoolID)
+		}
 	}
 	docQueryPending.Count(&stats.PendingDocuments)
 
 	docQueryApproved := r.db.Model(&models.Document{}).Where("status = ?", models.StatusApproved)
 	if schoolID != nil {
-		docQueryApproved = docQueryApproved.Where("school_id = ?", *schoolID)
+		if len(allowedSchoolIDs) > 0 {
+			docQueryApproved = docQueryApproved.Where("school_id IN ?", allowedSchoolIDs)
+		} else {
+			docQueryApproved = docQueryApproved.Where("school_id = ?", *schoolID)
+		}
 	}
 	docQueryApproved.Count(&stats.ApprovedDocuments)
 
 	docQueryActive := r.db.Model(&models.Document{}).Where("status NOT IN ?", []string{string(models.StatusClosed), string(models.StatusArchived), string(models.StatusRejected)})
 	if schoolID != nil {
-		docQueryActive = docQueryActive.Where("school_id = ?", *schoolID)
+		if len(allowedSchoolIDs) > 0 {
+			docQueryActive = docQueryActive.Where("school_id IN ?", allowedSchoolIDs)
+		} else {
+			docQueryActive = docQueryActive.Where("school_id = ?", *schoolID)
+		}
 	}
 	docQueryActive.Count(&stats.ActiveDocuments)
 	

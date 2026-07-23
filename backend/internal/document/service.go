@@ -161,11 +161,23 @@ func (s *service) Upload(uploaderID uuid.UUID, targetOwnerIDs []uuid.UUID, title
 		docStatus = models.StatusApproved // Self-upload receipt, immediately active
 	} else {
 		// Validate all users in the chain
+		var uniqueIDs []uuid.UUID
+		idMap := make(map[uuid.UUID]bool)
 		for _, id := range targetOwnerIDs {
-			var u models.User
-			if err := s.repo.(*repository).db.First(&u, "id = ?", id).Error; err != nil {
-				return nil, errors.New("one or more approvers not found in chain")
+			if !idMap[id] {
+				idMap[id] = true
+				uniqueIDs = append(uniqueIDs, id)
 			}
+		}
+
+		var users []models.User
+		if err := s.repo.(*repository).db.Where("id IN ?", uniqueIDs).Find(&users).Error; err != nil {
+			return nil, errors.New("failed to retrieve users in approval chain")
+		}
+		if len(users) != len(uniqueIDs) {
+			return nil, errors.New("one or more approvers not found in chain")
+		}
+		for _, u := range users {
 			if u.Role == "Admin" || u.Role == "SuperAdmin" {
 				return nil, errors.New("cannot assign documents to admins")
 			}
@@ -245,16 +257,19 @@ func (s *service) Upload(uploaderID uuid.UUID, targetOwnerIDs []uuid.UUID, title
 
 	// Setup pending approver records for the entire chain
 	if category != "Assignment Broadcast" {
+		var pendingApprovers []models.DocumentPendingApprover
 		for i, id := range targetOwnerIDs {
-			pendingApprover := &models.DocumentPendingApprover{
+			pendingApprovers = append(pendingApprovers, models.DocumentPendingApprover{
 				ID:         uuid.New(),
 				DocumentID: docID,
 				UserID:     id,
 				Stage:      i + 1,
 				Status:     "Pending",
-			}
-			if err := s.repo.CreatePendingApprover(pendingApprover); err != nil {
-				log.Printf("Warning: Failed to create pending approver: %v", err)
+			})
+		}
+		if len(pendingApprovers) > 0 {
+			if err := s.repo.(*repository).db.Create(&pendingApprovers).Error; err != nil {
+				log.Printf("Warning: Failed to create pending approvers: %v", err)
 			}
 		}
 	}
@@ -311,14 +326,28 @@ func (s *service) List(userID uuid.UUID, search string) ([]DocumentResponse, err
 		return nil, err
 	}
 
+	var docIDs []uuid.UUID
+	for _, d := range docs {
+		docIDs = append(docIDs, d.ID)
+	}
+
+	actedDocIDs := make(map[uuid.UUID]bool)
+	if len(docIDs) > 0 {
+		var results []uuid.UUID
+		err := s.repo.(*repository).db.Model(&models.WorkflowHistory{}).
+			Where("document_id IN ? AND actor_id = ?", docIDs, userID).
+			Pluck("document_id", &results).Error
+		if err == nil {
+			for _, id := range results {
+				actedDocIDs[id] = true
+			}
+		}
+	}
+
 	responses := make([]DocumentResponse, len(docs))
 	for i, d := range docs {
 		res := s.toDocumentResponse(&d)
-		var count int64
-		s.repo.(*repository).db.Model(&models.WorkflowHistory{}).
-			Where("document_id = ? AND actor_id = ?", d.ID, userID).
-			Count(&count)
-		res.HasActed = count > 0
+		res.HasActed = actedDocIDs[d.ID]
 		responses[i] = *res
 	}
 	return responses, nil
@@ -2524,7 +2553,10 @@ func (s *service) ListPendingAccessRequests(authenticatedUserID uuid.UUID) ([]Fi
 	var filteredShares []models.FileShare
 	for _, sh := range shares {
 		if s.userCanApprove(user, sh) {
-			filteredShares = append(filteredShares, sh)
+			hasAccess, _ := s.CheckFileAccess(sh.FileID, sh.UserID)
+			if !hasAccess {
+				filteredShares = append(filteredShares, sh)
+			}
 		}
 	}
 
@@ -2566,6 +2598,13 @@ func (s *service) ApproveOrRejectAccessRequest(shareID, authenticatedUserID uuid
 
 	if err := s.repo.SaveFileShare(share); err != nil {
 		return nil, err
+	}
+
+	if status == "approved" {
+		// Clean up any other duplicate pending requests for this user and this file
+		s.repo.(*repository).db.Model(&models.FileShare{}).
+			Where("file_id = ? AND user_id = ? AND status = ? AND id != ?", share.FileID, share.UserID, "pending", share.ID).
+			Updates(map[string]interface{}{"status": "approved", "granted_by_id": authenticatedUserID, "expires_at": share.ExpiresAt, "updated_at": time.Now()})
 	}
 
 	// Log audit trail

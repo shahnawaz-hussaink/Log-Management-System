@@ -182,10 +182,7 @@ export class CentralRepositoryComponent implements OnInit {
 
   isStandardUserWithAccess(file: any): boolean {
     if (!this.currentUser) return false;
-    const role = this.currentUser.Role || this.currentUser.role;
-    const isTopAdmin = role === 'SuperAdmin' || role === 'Admin' || role === 'School Admin' || role === 'Principal' || role === 'DHE' || (role && role.startsWith('Admin '));
-    if (isTopAdmin) return false;
-    return file.HasAccess || file.AccessStatus === 'pending' || file.AccessStatus === 'approved';
+    return file.AccessStatus === 'pending' || file.AccessStatus === 'approved';
   }
 
   goToDetails(file: any) {

@@ -630,30 +630,7 @@ func (s *service) GetAllRoles(actorRole string, actorSchoolID *uuid.UUID) ([]Rol
 	}
 
 	if actorRole == "SuperAdmin" {
-		resp := make([]RoleResponse, len(allRoles))
-		for i, r := range allRoles {
-			parentName := ""
-			if r.ParentRoleID != nil {
-				p, err := s.repo.GetRoleByID(*r.ParentRoleID)
-				if err == nil {
-					parentName = p.RoleName
-				}
-			}
-			resp[i] = RoleResponse{
-				ID:             r.ID,
-				RoleName:       r.RoleName,
-				IsAdminAccess:  r.IsAdminAccess,
-				ParentRoleID:   r.ParentRoleID,
-				ParentRoleName: parentName,
-				TenantID:       r.TenantID,
-				OrgName:        r.OrgName,
-				CreatedBy:      r.CreatedBy,
-				Path:           r.Path,
-				CreatedAt:      r.CreatedAt,
-				UpdatedAt:      r.UpdatedAt,
-			}
-		}
-		return resp, nil
+		return allRoles, nil
 	}
 
 	actorRoleRec, err := s.repo.GetRoleByName(actorRole, actorSchoolID)
@@ -1034,7 +1011,13 @@ func (s *service) GetAllOrganizations(actorRole string, actorSchoolID *uuid.UUID
 		}
 		repoImpl.db.Where("tenant_id = ?", *actorSchoolID).First(&actorOrg)
 
-		// Recursive helper function to check if checkOrgID is a descendant of ancestorOrgID
+		// Build map of all organizations for fast in-memory lookup
+		orgMap := make(map[uuid.UUID]models.Organization)
+		for _, o := range orgs {
+			orgMap[o.ID] = o
+		}
+
+		// In-memory helper function to check if checkOrgID is a descendant of ancestorOrgID
 		isDescendant := func(checkOrgID uuid.UUID, ancestorOrgID uuid.UUID) bool {
 			currID := checkOrgID
 			visited := make(map[uuid.UUID]bool)
@@ -1044,8 +1027,8 @@ func (s *service) GetAllOrganizations(actorRole string, actorSchoolID *uuid.UUID
 				}
 				visited[currID] = true
 
-				var o models.Organization
-				if err := repoImpl.db.Select("id, parent_org_id").Where("id = ?", currID).First(&o).Error; err != nil {
+				o, exists := orgMap[currID]
+				if !exists {
 					return false
 				}
 				if o.ParentOrgID == nil {
@@ -1060,7 +1043,7 @@ func (s *service) GetAllOrganizations(actorRole string, actorSchoolID *uuid.UUID
 		}
 
 		for _, org := range orgs {
-			if org.ID == actorOrg.ID || isDescendant(org.ID, actorOrg.ID) {
+			if isDescendant(org.ID, actorOrg.ID) {
 				filtered = append(filtered, org)
 			}
 		}
