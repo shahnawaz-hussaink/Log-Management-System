@@ -2449,8 +2449,13 @@ func (s *service) RequestFileAccess(fileID, authenticatedUserID uuid.UUID, remar
 
 	// Check if request already exists
 	existing, err := s.repo.GetFileShare(fileID, authenticatedUserID)
-	if err == nil && existing.Status == "pending" {
-		return nil, errors.New("a pending access request already exists for this file")
+	if err == nil {
+		if existing.Status == "pending" {
+			return nil, errors.New("a pending access request already exists for this file")
+		}
+		if existing.Status == "approved" && (existing.ExpiresAt == nil || existing.ExpiresAt.After(time.Now())) {
+			return nil, errors.New("you already have active access to this file")
+		}
 	}
 
 	// Resolve hierarchy-based routing
@@ -2464,44 +2469,64 @@ func (s *service) RequestFileAccess(fileID, authenticatedUserID uuid.UUID, remar
 		}
 	}
 
-	var creatorOrgID *uuid.UUID
-	if file.SchoolID != nil {
-		if cOrg, err := s.GetOrgForSchool(*file.SchoolID); err == nil {
-			creatorOrgID = &cOrg.ID
+	var closerOrgID *uuid.UUID
+	var closerSchoolID *uuid.UUID
+
+	if file.ArchivedByID != nil {
+		if file.ArchivedBy != nil {
+			closerSchoolID = file.ArchivedBy.SchoolID
+		} else {
+			var u models.User
+			if err := s.repo.(*repository).db.First(&u, "id = ?", *file.ArchivedByID).Error; err == nil {
+				closerSchoolID = u.SchoolID
+			}
+		}
+	} else {
+		closerSchoolID = file.CurrentOwner.SchoolID
+	}
+
+	if closerSchoolID != nil {
+		if cOrg, err := s.GetOrgForSchool(*closerSchoolID); err == nil {
+			closerOrgID = &cOrg.ID
 		}
 	}
 
 	var targetOrgID *uuid.UUID
 	var targetRoleID *uuid.UUID
 
-	// Determine tree-based access targets
-	if requesterOrgID != nil && creatorOrgID != nil && *requesterOrgID == *creatorOrgID {
-		// Same organization: ask access to the admin (his one level above)
-		var reqRole models.Role
-		if err := s.repo.(*repository).db.First(&reqRole, "role_name = ? AND tenant_id = ?", requester.Role, requester.SchoolID).Error; err == nil && reqRole.ParentRoleID != nil {
-			targetRoleID = reqRole.ParentRoleID
-			targetOrgID = creatorOrgID
-		} else {
-			// Requester is already at the top role in their school (e.g. School Admin),
-			// route to parent organization POC/admin
-			var currentOrg models.Organization
-			if err := s.repo.(*repository).db.First(&currentOrg, "id = ?", *requesterOrgID).Error; err == nil && currentOrg.ParentOrgID != nil {
-				targetOrgID = currentOrg.ParentOrgID
+	if requesterOrgID != nil && closerOrgID != nil {
+		commonParentID, err := s.FindCommonParentOrg(*requesterOrgID, *closerOrgID)
+		if err == nil && commonParentID != nil {
+			if *commonParentID == *requesterOrgID {
+				// Same organization: ask access to the parent role inside the organization
+				var reqRole models.Role
+				if err := s.repo.(*repository).db.First(&reqRole, "role_name = ? AND tenant_id = ?", requester.Role, requester.SchoolID).Error; err == nil && reqRole.ParentRoleID != nil {
+					targetRoleID = reqRole.ParentRoleID
+					targetOrgID = commonParentID
+				} else {
+					// Already at top role of this school, route to parent organization POC/admin
+					var currentOrg models.Organization
+					if err := s.repo.(*repository).db.First(&currentOrg, "id = ?", *requesterOrgID).Error; err == nil && currentOrg.ParentOrgID != nil {
+						targetOrgID = currentOrg.ParentOrgID
+					} else {
+						targetOrgID = nil // SuperAdmin
+					}
+				}
 			} else {
-				// No parent organization (root level), fall back to SuperAdmin
-				targetOrgID = nil
+				// Different organization: route to the least common parent organization POC/admin
+				targetOrgID = commonParentID
 			}
+		} else {
+			// Fall back to closerOrgID if no common parent found
+			targetOrgID = closerOrgID
 		}
 	} else if requesterOrgID != nil {
-		// Sibling node or different organization: request goes to immediate parent organization (one level above)
 		var currentOrg models.Organization
 		if err := s.repo.(*repository).db.First(&currentOrg, "id = ?", *requesterOrgID).Error; err == nil && currentOrg.ParentOrgID != nil {
 			targetOrgID = currentOrg.ParentOrgID
-		} else {
-			targetOrgID = creatorOrgID
 		}
-	} else if creatorOrgID != nil {
-		targetOrgID = creatorOrgID
+	} else if closerOrgID != nil {
+		targetOrgID = closerOrgID
 	}
 
 	share := &models.FileShare{
@@ -2600,11 +2625,16 @@ func (s *service) ApproveOrRejectAccessRequest(shareID, authenticatedUserID uuid
 		return nil, err
 	}
 
-	if status == "approved" {
-		// Clean up any other duplicate pending requests for this user and this file
+	if status == "approved" || status == "rejected" {
+		// Clean up any other duplicate pending requests for this user and this file to sync status
 		s.repo.(*repository).db.Model(&models.FileShare{}).
 			Where("file_id = ? AND user_id = ? AND status = ? AND id != ?", share.FileID, share.UserID, "pending", share.ID).
-			Updates(map[string]interface{}{"status": "approved", "granted_by_id": authenticatedUserID, "expires_at": share.ExpiresAt, "updated_at": time.Now()})
+			Updates(map[string]interface{}{
+				"status":        status,
+				"granted_by_id": authenticatedUserID,
+				"expires_at":    share.ExpiresAt,
+				"updated_at":    time.Now(),
+			})
 	}
 
 	// Log audit trail
@@ -2894,14 +2924,6 @@ func (s *service) GetOrgAncestors(orgID uuid.UUID) ([]uuid.UUID, error) {
 }
 
 func (s *service) FindCommonParentOrg(org1ID, org2ID uuid.UUID) (*uuid.UUID, error) {
-	if org1ID == org2ID {
-		var org models.Organization
-		if err := s.repo.(*repository).db.First(&org, "id = ?", org1ID).Error; err == nil {
-			return org.ParentOrgID, nil
-		}
-		return nil, errors.New("org not found")
-	}
-
 	ancestors1, _ := s.GetOrgAncestors(org1ID)
 	ancestors1 = append([]uuid.UUID{org1ID}, ancestors1...)
 
